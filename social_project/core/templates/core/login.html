@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h1>Login</h1>
+    </header>
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Render the login form -->
+        <button type="submit">Login</button>
+    </form>
+    {% if form.errors %}
+    <div>
+        <ul>
+            {% for field, errors in form.errors.items %}
+            <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

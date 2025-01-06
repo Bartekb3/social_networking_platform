@@ -1,0 +1,27 @@
+.messages {
+    list-style: none;
+    padding: 0;
+}
+
+.messages li {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.messages li.success {
+    background-color: #4caf50;
+    /* Green */
+}
+
+.messages li.error {
+    background-color: #f44336;
+    /* Red */
+}
+
+.messages li.warning {
+    background-color: #ff9800;
+    /* Orange */
+}

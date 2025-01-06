@@ -1,0 +1,77 @@
+{% load static %} 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Social Project{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+    <header>
+      <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'profile' user.id %}">My Profile</a></li>
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit">Logout</button>
+          </form>
+            {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'signup' %}">Signup</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    </header>
+
+    <!-- Messages Section -->
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Social Project. All rights reserved.</p>
+    </footer>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          document.querySelectorAll('.like-button').forEach(function (button) {
+              button.addEventListener('click', function (event) {
+                  event.preventDefault(); // Prevent the form submission
+      
+                  const postId = button.dataset.postId;
+                  const likeUrl = button.dataset.likeUrl;
+      
+                  fetch(likeUrl, {
+                      method: 'POST',
+                      headers: {
+                          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                      },
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.liked) {
+                          button.textContent = 'Unlike';
+                      } else {
+                          button.textContent = 'Like';
+                      }
+                      const likeCount = document.querySelector(`#like-count-${postId}`);
+                      likeCount.textContent = `${data.like_count} likes`;
+                  })
+                  .catch(error => console.error('Error:', error));
+              });
+          });
+      });
+      </script>
+</body>
+</html>

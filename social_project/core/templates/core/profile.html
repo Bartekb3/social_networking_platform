@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ profile.user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h1>
+            {{ profile.user.username }}'s Profile
+            {% if is_own_profile %}
+            <span>(This is your profile)</span>
+            {% endif %}
+        </h1>
+    </header>
+
+    <div>
+        <p>Email: {{ profile.user.email }}</p>
+        <p>Friends: {{ profile.friends.count }}</p>
+        <ul>
+            {% for friend in profile.friends.all %}
+            <li><a href="{% url 'profile' friend.user.id %}">{{ friend.user.username }}</a></li>
+            {% empty %}
+            <p>No friends yet.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if is_own_profile %}
+    <p>Welcome to your profile! You can see and manage your posts and connections here.</p>
+    {% else %}
+    <form method="post" action="{% url 'add_friend' profile.user.id %}">
+        {% csrf_token %}
+        {% if profile not in user.profile.friends.all %}
+        <button type="submit">Add Friend</button>
+        {% else %}
+        <p>You are already friends with {{ profile.user.username }}.</p>
+        {% endif %}
+    </form>
+    {% endif %}
+
+    <hr>
+
+    <section>
+        <header>
+            <h2>{{ profile.user.username }}'s Posts</h2>
+        </header>
+        <ul>
+            {% for post in posts %}
+            <li>
+                <article>
+                    <p>{{ post.content }}</p>
+                    <p><small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small></p>
+                    <footer>
+                        <!-- Like Button -->
+                        <p id="like-count-{{ post.id }}">{{ post.likes.count }} likes</p>
+                        <button class="like-button" data-post-id="{{ post.id }}" data-like-url="{% url 'like_post' post.id %}">
+                            {% if user in post.likes.all %}
+                            Unlike
+                            {% else %}
+                            Like
+                            {% endif %}
+                        </button>
+
+                        <!-- Comment Form -->
+                        <form method="post" action="{% url 'add_comment' post.id %}">
+                            {% csrf_token %}
+                            <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+                            <button type="submit">Comment</button>
+                        </form>
+
+                        <p><a href="{% url 'post_detail' post.id %}">View Post</a></p>
+                    </footer>
+                </article>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+</section>
+{% endblock %}
