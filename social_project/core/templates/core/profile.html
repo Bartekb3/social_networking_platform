@@ -25,17 +25,39 @@
         </ul>
     </div>
 
-    {% if is_own_profile %}
-    <p>Welcome to your profile! You can see and manage your posts and connections here.</p>
+    {% if profile.user != user %}
+    {% if profile in user.profile.friends.all %}
+    <p>You are friends with {{ profile.user.username }}.</p>
+    {% elif user.profile in profile.friend_requests.all %}
+    <p>You have already sent a friend request to {{ profile.user.username }}.</p>
     {% else %}
-    <form method="post" action="{% url 'add_friend' profile.user.id %}">
+    <!-- Send Friend Request Button -->
+    <form method="post" action="{% url 'send_friend_request' profile.user.id %}">
         {% csrf_token %}
-        {% if profile not in user.profile.friends.all %}
-        <button type="submit">Add Friend</button>
-        {% else %}
-        <p>You are already friends with {{ profile.user.username }}.</p>
-        {% endif %}
+        <button type="submit">Send Friend Request</button>
     </form>
+    {% endif %}
+{% else %}
+<p>This is your profile.</p>
+{% endif %}
+
+    {% if profile.user != user %}
+        {% if profile in user.profile.friends.all %}
+        <!-- Unfriend Button -->
+        <form method="post" action="{% url 'unfriend' profile.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Unfriend</button>
+        </form>
+        {% else %}
+        <p></p>
+        <!-- Add Friend Button -->
+        {% comment %} <form method="post" action="{% url 'add_friend' profile.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Add Friend</button>
+        </form> {% endcomment %}
+        {% endif %}
+    {% else %}
+    <p></p>
     {% endif %}
 
     <hr>

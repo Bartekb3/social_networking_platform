@@ -7,7 +7,63 @@
     <header>
         <h1>Welcome, {{ user.username }}!</h1>
         <p><a href="{% url 'profile' user.id %}">Go to My Profile</a></p>
+        <!-- Search Form -->
+        <form method="get" action="{% url 'home' %}">
+            <input type="text" name="q" placeholder="Search users..." value="{{ query|default_if_none:'' }}">
+            <button type="submit">Search</button>
+        </form>
+        <!-- Search Results -->
+        {% if search_results is not None %}
+        <h2>Search Results</h2>
+        {% if search_results %}
+        <ul>
+            {% for user in search_results %}
+            <li>
+                <a href="{% url 'profile' user.id %}">{{ user.username }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No users found for "{{ query }}".</p>
+        {% endif %}
+        {% endif %}
+
+
+        <h2>Create post</h2>
+        <form method="post" action="{% url 'home' %}">
+            {% csrf_token %}
+            {{ post_form.content.errors }} 
+            <textarea name="content" rows="4" placeholder="What's on your mind?" required>{{ post_form.content.value|default:'' }}</textarea>
+            <button type="submit" name="create_post">Post</button>
+        </form>
     </header>
+    <section>
+
+        
+        <header>
+            <h2>Friend Requests</h2>
+        </header>
+    
+        {% if user.profile.friend_requests.exists %}
+        <ul>
+            {% for sender in user.profile.friend_requests.all %}
+            <li>
+                <p>{{ sender.user.username }} sent you a friend request.</p>
+                <form method="post" action="{% url 'accept_friend_request' sender.user.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Accept</button>
+                </form>
+                <form method="post" action="{% url 'reject_friend_request' sender.user.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Reject</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending friend requests.</p>
+        {% endif %}
+    </section>
 
     <h2>Friend Feed</h2>
     {% if posts %}
@@ -34,7 +90,7 @@
                     </button>
                 </footer>
                 <!-- Comment Form -->
-                <form method="post" action="{% url 'add_comment' post.id %}">
+                <form class="comment-form" data-post-id="{{ post.id }}">
                     {% csrf_token %}
                     <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
                     <button type="submit">Comment</button>

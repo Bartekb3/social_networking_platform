@@ -25,8 +25,9 @@ class Comment(models.Model):
 
 # Profile model
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)  # One-to-one relationship with User
-    friends = models.ManyToManyField('self', symmetrical=True, blank=True)  # Friend relationships (symmetrical)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    friends = models.ManyToManyField('self', symmetrical=True, blank=True)
+    friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_requests')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
