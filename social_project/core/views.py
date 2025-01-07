@@ -24,10 +24,6 @@ def signup_view(request):
     else:
         form = RegistrationForm()
     return render(request, 'core/signup.html', {'form': form})
-class CustomLoginView(LoginView):
-    template_name = 'core/login.html'
-class CustomLogoutView(LogoutView):
-    next_page = 'login'  # Redirect to login page after logout
     
 
 
@@ -207,22 +203,28 @@ def post_detail_view(request, post_id):
 @login_required
 def add_comment_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+
     if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            return JsonResponse({
-                'comment_author': comment.author.username,
-                'comment_content': comment.content,
-                'comment_created_at': comment.created_at.strftime('%b %d, %Y, %I:%M %p'),
-                'post_id': post_id,
-            })
+        # Get the comment content from the POST data
+        comment_content = request.POST.get('content')
+
+        if not comment_content:
+            return JsonResponse({'error': 'Content is required.'}, status=400)
+
+        # Create and save the comment
+        comment = Comment.objects.create(
+            post=post,
+            author=request.user,
+            content=comment_content
+        )
+        return JsonResponse({
+            'comment_author': comment.author.username,
+            'comment_content': comment.content,
+            'comment_created_at': comment.created_at.strftime('%b %d, %Y, %I:%M %p'),
+            'post_id': post_id,
+        })
+
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
 
 
 

@@ -8,8 +8,8 @@
     <h1>Signup</h1>
   </header>
   <form method="post">
-    {% csrf_token %} {{ form.as_p }}
-    <!-- Render form fields -->
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- Automatically renders all fields, including birthdate and gender -->
     <button type="submit">Signup</button>
   </form>
   {% if form.errors %}

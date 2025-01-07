@@ -84,7 +84,7 @@
                         </button>
 
                         <!-- Comment Form -->
-                        <form method="post" action="{% url 'add_comment' post.id %}">
+                        <form class="comment-form" data-post-id="{{ post.id }}">
                             {% csrf_token %}
                             <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
                             <button type="submit">Comment</button>

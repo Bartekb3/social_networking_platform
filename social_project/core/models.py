@@ -26,6 +26,13 @@ class Comment(models.Model):
 # Profile model
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    birthdate = models.DateField(null=True, blank=True)  # Birthdate field
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)  # Gender field
     friends = models.ManyToManyField('self', symmetrical=True, blank=True)
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_requests')
 
@@ -34,8 +41,9 @@ class Profile(models.Model):
 
 
 
+
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.get_or_create(user=instance)  # Ensures no duplicate profiles
 

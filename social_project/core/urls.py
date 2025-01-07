@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView, LoginView
-from .views import signup_view, CustomLoginView,reject_friend_request_view,accept_friend_request_view ,send_friend_request_view, unfriend_view, CustomLogoutView, home_view,create_post_view,post_detail_view, add_comment_view, like_post_view, add_friend_view,profile_view
+from .views import signup_view, reject_friend_request_view,accept_friend_request_view ,send_friend_request_view, unfriend_view, home_view,create_post_view,post_detail_view, add_comment_view, like_post_view, add_friend_view,profile_view
 ethod_names = ['get', 'post', 'head', 'options'] 
 
 urlpatterns = [

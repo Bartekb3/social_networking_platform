@@ -12,7 +12,7 @@
         {{ form.as_p }}  <!-- Render the login form -->
         <button type="submit">Login</button>
     </form>
-    {% if form.errors %}
+    {% comment %} {% if form.errors %}
     <div>
         <ul>
             {% for field, errors in form.errors.items %}
@@ -20,6 +20,6 @@
             {% endfor %}
         </ul>
     </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
 </section>
 {% endblock %}

@@ -73,46 +73,47 @@
               });
           });
       });
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.comment-form').forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevent the default form submission
+      document.querySelectorAll('.comment-form').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
     
-                const postId = form.dataset.postId;
-                const url = "{% url 'add_comment' 0 %}".replace('0', postId);
-                const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-                const commentContent = form.querySelector('textarea[name="content"]').value;
+            const postId = form.dataset.postId;
+            const url = "{% url 'add_comment' 0 %}".replace('0', postId);
+            const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+            const commentContent = form.querySelector('textarea[name="content"]').value;
     
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify({ content: commentContent }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert('Error: ' + data.error);
-                    } else {
-                        // Update the comments list dynamically
-                        const commentList = document.querySelector(`#comment-list-${postId}`);
-                        const newComment = document.createElement('li');
-                        newComment.innerHTML = `<strong>${data.comment_author}</strong>: ${data.comment_content}`;
-                        commentList.appendChild(newComment);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded', // Use form-encoded content
+                    'X-CSRFToken': csrfToken,
+                },
+                body: new URLSearchParams({ content: commentContent }).toString(),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    // Update the comments list dynamically
+                    const commentList = document.querySelector(`#comment-list-${postId}`);
+                    const newComment = document.createElement('li');
+                    newComment.innerHTML = `<strong>${data.comment_author}</strong>: ${data.comment_content}`;
+                    commentList.appendChild(newComment);
     
-                        // Clear the textarea
-                        form.querySelector('textarea[name="content"]').value = '';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Something went wrong while adding your comment.');
-                });
+                    // Clear the textarea
+                    form.querySelector('textarea[name="content"]').value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                form.querySelector('textarea[name="content"]').value = '';
+                {% comment %} alert('Something went wrong while adding your comment.'); {% endcomment %}
             });
         });
     });
+    
+    
       </script>
       
         
