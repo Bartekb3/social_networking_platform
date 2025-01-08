@@ -1,4 +1,48 @@
+{% extends 'core/base2.html' %}
+{% load static %}
+
+{% block title %}Login | Social Project{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  
+  <!-- Left brand section -->
+  <div class="auth-left">
+    <h1 class="brand-title">Social Project</h1>
+    <p class="brand-tagline">
+      Connect with friends and the world around you on Social Project.
+    </p>
+  </div>
+
+  <!-- Right form section -->
+  <div class="auth-right">
+    <div class="auth-form-container">
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- username, password, etc. -->
+
+        <button class="primary-btn" type="submit">Log In</button>
+      </form>
+
+      {% comment %} <div class="forgot-password">
+        <a href="#">Forgot Password?</a>
+      </div> {% endcomment %}
+
+      <hr>
+      <button class="secondary-btn" type="button" 
+              onclick="window.location.href='{% url 'signup' %}'">
+        Create New Account
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% comment %} {
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Login{% endblock %}
 
@@ -9,17 +53,43 @@
     </header>
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Render the login form -->
+        {{ form.as_p }}  <!-- Renders the login form fields in paragraphs -->
         <button type="submit">Login</button>
     </form>
-    {% comment %} {% if form.errors %}
-    <div>
-        <ul>
-            {% for field, errors in form.errors.items %}
-            <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %} {% endcomment %}
 </section>
 {% endblock %}
+
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="fb-login-page">
+  <!-- Left Section: Logo and Tagline -->
+  <div class="fb-login-left">
+    <h1 class="brand-title">Social Project</h1>
+    <p class="brand-tagline">
+      Connect with friends and the world around you on Social Project.
+    </p>
+  </div>
+
+  <!-- Right Section: Login Form -->
+  <div class="fb-login-right">
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {{ form.as_p }}  <!-- Django form fields for 'username'/'password' -->
+
+      <button class="login-button" type="submit">Log In</button>
+
+      <div class="forgot-password">
+        <a href="#">Forgot Password?</a>
+      </div>
+      <hr>
+      <button class="create-account-btn" type="button">
+        Create New Account
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %} {% endcomment %}

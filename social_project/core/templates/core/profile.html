@@ -3,6 +3,214 @@
 {% block title %}{{ profile.user.username }}'s Profile{% endblock %}
 
 {% block content %}
+<section class="profile-section">
+  <!-- Profile Header -->
+  <header class="profile-header">
+    <div class="profile-info">
+      <h1>{{ profile.user.username }}</h1>
+      {% if is_own_profile %}
+      <small>(This is your profile)</small>
+      {% endif %}
+
+      <p>Email: {{ profile.user.email }}</p>
+      <p>Friends: {{ profile.friends.count }}</p>
+
+      <!-- Friends List -->
+      <ul class="profile-friends">
+        {% for friend in profile.friends.all %}
+          <li>
+            <a href="{% url 'profile' friend.user.id %}">{{ friend.user.username }}</a>
+          </li>
+        {% empty %}
+          <li>No friends yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Profile Buttons (friend request/unfriend) if not user's own profile -->
+    <div class="profile-actions">
+      {% if profile.user != user %}
+        
+        {% if profile in user.profile.friends.all %}
+          <p>You are friends with {{ profile.user.username }}.</p>
+          <!-- Unfriend Button -->
+          <form method="post" action="{% url 'unfriend' profile.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Unfriend</button>
+          </form>
+        {% elif user.profile in profile.friend_requests.all %}
+          <p>You have already sent a friend request to {{ profile.user.username }}.</p>
+        {% else %}
+          <!-- Send Friend Request Button -->
+          <form method="post" action="{% url 'send_friend_request' profile.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Send Friend Request</button>
+          </form>
+        {% endif %}
+
+      {% else %}
+        <p>(You can edit your profile in settings, etc.)</p>
+      {% endif %}
+    </div>
+  </header>
+
+  <hr>
+
+  <!-- Profile Posts -->
+  <section class="profile-posts">
+    <h2>{{ profile.user.username }}'s Posts</h2>
+
+    {% if posts %}
+      {% for post in posts %}
+      <article class="post-card">
+        <header>
+          <h3>
+            {{ post.author.username }}
+            <small>posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small>
+          </h3>
+        </header>
+
+        <p>{{ post.content }}</p>
+
+        <footer>
+          <!-- Like Button -->
+          <button class="like-button" 
+                  data-post-id="{{ post.id }}" 
+                  data-like-url="{% url 'like_post' post.id %}">
+            {% if user in post.likes.all %}
+              Unlike ({{ post.likes.count }})
+            {% else %}
+              Like ({{ post.likes.count }})
+            {% endif %}
+          </button>
+
+          <!-- Comment Button (toggle) -->
+          <button class="comment-toggle" data-post-id="{{ post.id }}">
+            Comment
+          </button>
+
+          <!-- View Post -->
+          <a class="view-post-btn" href="{% url 'post_detail' post.id %}">
+            View Post
+          </a>
+        </footer>
+
+        <!-- Hidden comment box -->
+        <div class="comment-box hidden" id="comment-box-{{ post.id }}">
+          <form class="comment-form" data-post-id="{{ post.id }}">
+            {% csrf_token %}
+            <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+            <button type="submit">Submit</button>
+          </form>
+        </div>
+      </article>
+      {% endfor %}
+    {% else %}
+      <p>No posts to display.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
+
+
+{%comment%}
+{% extends 'core/base.html' %}
+
+{% block title %}{{ profile.user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<section>
+  <header>
+    <h1>
+      {{ profile.user.username }}'s Profile
+      {% if is_own_profile %}
+      <span>(This is your profile)</span>
+      {% endif %}
+    </h1>
+  </header>
+
+  <div>
+    <p>Email: {{ profile.user.email }}</p>
+    <p>Friends: {{ profile.friends.count }}</p>
+    <ul>
+      {% for friend in profile.friends.all %}
+      <li>
+        <a href="{% url 'profile' friend.user.id %}">
+          {{ friend.user.username }}
+        </a>
+      </li>
+      {% empty %}
+      <p>No friends yet.</p>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Friend Request or Unfriend Buttons if not your own profile -->
+  {% if profile.user != user %}
+    {% if profile in user.profile.friends.all %}
+      <p>You are friends with {{ profile.user.username }}.</p>
+    {% elif user.profile in profile.friend_requests.all %}
+      <p>You have already sent a friend request to {{ profile.user.username }}.</p>
+    {% else %}
+      <!-- Send Friend Request Button -->
+      <form method="post" action="{% url 'send_friend_request' profile.user.id %}">
+        {% csrf_token %}
+        <button type="submit">Send Friend Request</button>
+      </form>
+    {% endif %}
+
+    {% if profile in user.profile.friends.all %}
+      <!-- Unfriend Button -->
+      <form method="post" action="{% url 'unfriend' profile.user.id %}">
+        {% csrf_token %}
+        <button type="submit">Unfriend</button>
+      </form>
+    {% endif %}
+  {% else %}
+    <p>This is your profile.</p>
+  {% endif %}
+
+  <hr>
+
+  <section>
+    <header>
+      <h2>{{ profile.user.username }}'s Posts</h2>
+    </header>
+    <ul>
+      {% for post in posts %}
+      <li>
+        <article>
+          <p>{{ post.content }}</p>
+          <p><small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small></p>
+          <footer>
+            <p id="like-count-{{ post.id }}">{{ post.likes.count }} likes</p>
+            <button class="like-button" data-post-id="{{ post.id }}" data-like-url="{% url 'like_post' post.id %}">
+              {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
+            </button>
+
+            <!-- Comment Form -->
+            <form class="comment-form" data-post-id="{{ post.id }}">
+              {% csrf_token %}
+              <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+              <button type="submit">Comment</button>
+            </form>
+
+            <p><a href="{% url 'post_detail' post.id %}">View Post</a></p>
+          </footer>
+        </article>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</section>
+{% endblock %}
+
+
+{% comment %} {% comment %} {% comment %} {% extends 'core/base.html' %}
+
+{% block title %}{{ profile.user.username }}'s Profile{% endblock %}
+
+{% block content %}
 <section>
     <header>
         <h1>
@@ -54,7 +262,7 @@
         {% comment %} <form method="post" action="{% url 'add_friend' profile.user.id %}">
             {% csrf_token %}
             <button type="submit">Add Friend</button>
-        </form> {% endcomment %}
+        </form> 
         {% endif %}
     {% else %}
     <p></p>
@@ -98,4 +306,4 @@
         </ul>
     </section>
 </section>
-{% endblock %}
+{% endblock %} {% endcomment %} 

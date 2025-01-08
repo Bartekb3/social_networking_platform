@@ -1,3 +1,757 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Social Project{% endblock %}</title>
+  <!-- Main stylesheet with Facebook-like styles -->
+  <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+  
+  <!-- HEADER / TOP NAV -->
+  <header class="fb-header">
+    <!-- Left: Logo -->
+    <div class="logo-container">
+      <a href="{% url 'home' %}">
+        <img src="{% static 'core/logo.svg' %}" alt="Social Project Logo" class="logo">
+      </a>
+    </div>
+
+    <!-- Center: search bar & search results -->
+    <div class="search-bar">
+      <form method="get" action="{% url 'home' %}">
+        <input 
+          type="text" 
+          name="q" 
+          placeholder="Search..." 
+          value="{{ request.GET.q|default_if_none:'' }}" 
+        />
+      </form>
+
+      <!-- If we have search_results in the context, display them below -->
+      {% if search_results is not None %}
+      <div class="search-results">
+        {% if search_results %}
+          <ul>
+            {% for usr in search_results %}
+            <li>
+              <a href="{% url 'profile' usr.id %}">{{ usr.username }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No users found for "{{ request.GET.q }}".</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right: example quick links -->
+    <nav class="top-nav-right">
+      <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'profile' user.id %}">Profile</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- BODY CONTAINER: sidebar + main content -->
+  <div class="fb-body-container">
+    
+    <!-- LEFT SIDEBAR (only if authenticated) -->
+    {% if user.is_authenticated %}
+    <aside class="fb-sidebar">
+      <ul class="sidebar-menu">
+
+        <!-- Friends (collapsible) -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Friends</button>
+          <ul class="submenu">
+            {% if user.profile.friends.all %}
+              {% for friend in user.profile.friends.all %}
+              <li>
+                <a href="{% url 'profile' friend.user.id %}">{{ friend.user.username }}</a>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li>No friends yet.</li>
+            {% endif %}
+          </ul>
+        </li>
+
+        <!-- Friend Requests (collapsible) -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Friend Requests</button>
+          <ul class="submenu">
+            {% if user.profile.friend_requests.all %}
+              {% for sender in user.profile.friend_requests.all %}
+              <li>
+                <span>{{ sender.user.username }}</span>
+                <form method="post" action="{% url 'accept_friend_request' sender.user.id %}">
+                  {% csrf_token %}
+                  <button type="submit">Accept</button>
+                </form>
+                <form method="post" action="{% url 'reject_friend_request' sender.user.id %}">
+                  {% csrf_token %}
+                  <button type="submit">Reject</button>
+                </form>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li>No friend requests.</li>
+            {% endif %}
+          </ul>
+        </li>
+
+      </ul>
+      
+      <!-- Logout at bottom -->
+      <div class="sidebar-logout">
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">Logout</button>
+        </form>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="fb-main-content">
+
+      <!-- Messages Section (for django.contrib.messages) -->
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- Additional content from child templates -->
+      {% block content %}{% endblock %}
+
+     
+
+  <!-- FOOTER -->
+  <footer class="fb-footer">
+    <p>&copy; 2025 Social Project. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts: toggling submenus, toggling comment boxes, etc. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      /* 1) Toggle submenus in sidebar */
+      document.querySelectorAll('.menu-toggle').forEach(function(toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          const submenu = this.nextElementSibling;
+          if (submenu) {
+            submenu.classList.toggle('open');
+          }
+        });
+      });
+
+      /* 2) Like button logic (your existing code) */
+      document.querySelectorAll('.like-button').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+          event.preventDefault();
+          const postId = button.dataset.postId;
+          const likeUrl = button.dataset.likeUrl;
+          fetch(likeUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+          })
+          .then(response => response.json())
+          .then(data => {
+            // Update button text and like count
+            button.textContent = data.liked ? `Unlike (${data.like_count})` : `Like (${data.like_count})`;
+          })
+          .catch(error => console.error('Error:', error));
+        });
+      });
+
+      /* 3) Comment toggle: show/hide the comment box */
+      document.querySelectorAll('.comment-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const postId = btn.dataset.postId;
+          const commentBox = document.getElementById('comment-box-' + postId);
+          if (commentBox) {
+            commentBox.classList.toggle('hidden');
+          }
+        });
+      });
+
+      /* 4) Comment form submission (your existing code) */
+      document.querySelectorAll('.comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const postId = form.dataset.postId;
+          const url = "{% url 'add_comment' 0 %}".replace('0', postId);
+          const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+          const commentContent = form.querySelector('textarea[name="content"]').value;
+
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrfToken,
+            },
+            body: new URLSearchParams({ content: commentContent }).toString(),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              alert('Error: ' + data.error);
+            } else {
+              // Optionally add the comment to a <ul> if you track them here.
+              // or hide comment box / clear the input
+              form.querySelector('textarea[name="content"]').value = '';
+              // For a real-time comment list update, you'd need a <ul> with id="comment-list-postId"
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            form.querySelector('textarea[name="content"]').value = '';
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+{%comment%}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Social Project{% endblock %}</title>
+  <!-- Main stylesheet with Facebook-like styles -->
+  <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+  
+  <!-- HEADER / TOP NAV -->
+  <header class="fb-header">
+    <!-- Left: Logo -->
+    <div class="logo-container">
+      <a href="{% url 'home' %}">
+        <img src="{% static 'core/logo.svg' %}" alt="Social Project Logo" class="logo">
+      </a>
+    </div>
+
+    <!-- Center: search bar & search results -->
+    <div class="search-bar">
+      <form method="get" action="{% url 'home' %}">
+        <input type="text" name="q" placeholder="Search..." 
+               value="{{ request.GET.q|default_if_none:'' }}" />
+      </form>
+
+      <!-- If we have search_results in the context, display them below -->
+      {% if search_results is not None %}
+        <div class="search-results">
+          {% if search_results %}
+            <ul>
+              {% for usr in search_results %}
+                <li>
+                  <a href="{% url 'profile' usr.id %}">{{ usr.username }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No users found for "{{ request.GET.q }}".</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right: quick nav or icons (optional) -->
+    <nav class="top-nav-right">
+      <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'profile' user.id %}">Profile</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- BODY CONTAINER: sidebar + main content -->
+  <div class="fb-body-container">
+    <!-- LEFT SIDEBAR (only if authenticated) -->
+    {% if user.is_authenticated %}
+    <aside class="fb-sidebar">
+      <ul class="sidebar-menu">
+        
+        <!-- Friends -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Friends</button>
+          <ul class="submenu">
+            {% if user.profile.friends.all %}
+              {% for friend in user.profile.friends.all %}
+              <li>
+                <a href="{% url 'profile' friend.user.id %}">
+                  {{ friend.user.username }}
+                </a>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li>No friends yet.</li>
+            {% endif %}
+          </ul>
+        </li>
+
+        <!-- Friend Requests -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Friend Requests</button>
+          <ul class="submenu">
+            {% if user.profile.friend_requests.all %}
+              {% for sender in user.profile.friend_requests.all %}
+              <li>
+                <a href="{% url 'profile' sender.user.id %}">
+                  {{ sender.user.username }}
+                </a>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li>No friend requests.</li>
+            {% endif %}
+          </ul>
+        </li>
+
+      </ul>
+      
+      <!-- Logout at bottom -->
+      <div class="sidebar-logout">
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">Logout</button>
+        </form>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="fb-main-content">
+      <!-- Messages Section (django.contrib.messages) -->
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="fb-footer">
+    <p>&copy; 2025 Social Project. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts: toggling submenus, like/comment, etc. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // 1. Toggle submenus in sidebar
+      document.querySelectorAll('.menu-toggle').forEach(function(toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          const submenu = this.nextElementSibling;
+          if (submenu) {
+            submenu.classList.toggle('open');
+          }
+        });
+      });
+
+      // 2. Like button logic (your existing code)
+      document.querySelectorAll('.like-button').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+          event.preventDefault();
+          const postId = button.dataset.postId;
+          const likeUrl = button.dataset.likeUrl;
+          fetch(likeUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+          })
+          .then(response => response.json())
+          .then(data => {
+            button.textContent = data.liked ? 'Unlike' : 'Like';
+            document.querySelector('#like-count-' + postId).textContent = data.like_count + ' likes';
+          })
+          .catch(error => console.error('Error:', error));
+        });
+      });
+
+      // 3. Comment form logic (your existing code)
+      document.querySelectorAll('.comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const postId = form.dataset.postId;
+          const url = "{% url 'add_comment' 0 %}".replace('0', postId);
+          const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+          const commentContent = form.querySelector('textarea[name="content"]').value;
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrfToken,
+            },
+            body: new URLSearchParams({ content: commentContent }).toString(),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              alert('Error: ' + data.error);
+            } else {
+              // Append new comment to the comment list if present
+              const commentList = document.querySelector('#comment-list-' + postId);
+              if (commentList) {
+                const newComment = document.createElement('li');
+                newComment.innerHTML = `<strong>${data.comment_author}</strong>: ${data.comment_content}`;
+                commentList.appendChild(newComment);
+              }
+              // Reset textarea
+              form.querySelector('textarea[name="content"]').value = '';
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            form.querySelector('textarea[name="content"]').value = '';
+          });
+        });
+      });
+
+    });
+  </script>
+</body>
+</html>
+
+
+
+{%comment%}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Social Project{% endblock %}</title>
+  <!-- Main stylesheet with Facebook-like styles -->
+  <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+  
+  <!-- HEADER / TOP NAV -->
+  <header class="fb-header">
+    <!-- Left: Logo -->
+    <div class="logo-container">
+      <a href="{% url 'home' %}">
+        <img src="{% static 'core/logo.svg' %}" alt="Social Project Logo" class="logo">
+      </a>
+    </div>
+    
+    <!-- Center: search bar -->
+    <div class="search-bar">
+      <form method="get" action="{% url 'home' %}">
+        <input type="text" name="q" placeholder="Search..." />
+      </form>
+    </div>
+
+    <!-- Right: quick nav or icons -->
+    <nav class="top-nav-right">
+        <ul>
+          <!-- Could place icons or text links here -->
+          {% comment %} <li><a href="{% url 'home' %}">Home</a></li> 
+          <li><a href="{% url 'profile' user.id %}">Profile</a></li>
+        </ul>
+      </nav>
+  </header>
+  
+  <!-- BODY CONTAINER: sidebar + main content -->
+  <div class="fb-body-container">
+    <!-- LEFT SIDEBAR -->
+    {% if user.is_authenticated %}
+    <aside class="fb-sidebar">
+      <!-- Example collapsible/toggleable menu -->
+      <ul class="sidebar-menu">
+        <!-- My Profile -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">My Profile</button>
+          <ul class="submenu">
+            <li><a href="{% url 'profile' user.id %}">View Profile</a></li>
+            <li><a href="{% url 'home' %}?show=edit_profile">Edit Profile</a></li>
+          </ul>
+        </li>
+
+        <!-- Friends -->
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Friends</button>
+          <ul class="submenu">
+            <li><a href="{% url 'home' %}?show=friends_list">Friends List</a></li>
+            <li><a href="{% url 'home' %}?show=add_friends">Add New Friends</a></li>
+          </ul>
+        </li>
+
+        <!-- Friend Requests -->
+        <li class="menu-item">
+          <a href="{% url 'home' %}?show=friend_requests">Friend Requests</a>
+        </li>
+      </ul>
+      
+      <!-- Logout at bottom -->
+      <div class="sidebar-logout">
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">Logout</button>
+        </form>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="fb-main-content">
+      <!-- Messages Section -->
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% block content %}
+      
+      {% endblock %}
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="fb-footer">
+    <p>&copy; 2025 Social Project. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts (like toggling submenus, like/comment JS, etc.) -->
+  <script>
+    // Toggle submenus in sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.menu-toggle').forEach(function(toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          const submenu = this.nextElementSibling;
+          if (submenu) {
+            submenu.classList.toggle('open');
+          }
+        });
+      });
+
+      // Like button logic (your existing code)
+      document.querySelectorAll('.like-button').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+          event.preventDefault();
+          const postId = button.dataset.postId;
+          const likeUrl = button.dataset.likeUrl;
+          fetch(likeUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+          })
+          .then(response => response.json())
+          .then(data => {
+            button.textContent = data.liked ? 'Unlike' : 'Like';
+            document.querySelector(`#like-count-${postId}`).textContent = data.like_count + ' likes';
+          })
+          .catch(error => console.error('Error:', error));
+        });
+      });
+
+      // Comment form logic (your existing code)
+      document.querySelectorAll('.comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const postId = form.dataset.postId;
+          const url = "{% url 'add_comment' 0 %}".replace('0', postId);
+          const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+          const commentContent = form.querySelector('textarea[name="content"]').value;
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrfToken,
+            },
+            body: new URLSearchParams({ content: commentContent }).toString(),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              alert('Error: ' + data.error);
+            } else {
+              const commentList = document.querySelector(`#comment-list-${postId}`);
+              if (commentList) {
+                const newComment = document.createElement('li');
+                newComment.innerHTML = `<strong>${data.comment_author}</strong>: ${data.comment_content}`;
+                commentList.appendChild(newComment);
+              }
+              form.querySelector('textarea[name="content"]').value = '';
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            form.querySelector('textarea[name="content"]').value = '';
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Social Project{% endblock %}</title>
+    <!-- Link your main stylesheet -->
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+</head>
+<body>
+    <header>
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'core/logo.svg' %}" alt="Social Project Logo" class="logo">
+            </a>
+        </div>
+
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'profile' user.id %}">My Profile</a></li>
+                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit">Logout</button>
+                    </form>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'signup' %}">Signup</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Messages Section -->
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Social Project. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript for like/comment, etc. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.like-button').forEach(function (button) {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault(); // Prevent the form submission
+        
+                    const postId = button.dataset.postId;
+                    const likeUrl = button.dataset.likeUrl;
+        
+                    fetch(likeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.liked) {
+                            button.textContent = 'Unlike';
+                        } else {
+                            button.textContent = 'Like';
+                        }
+                        const likeCount = document.querySelector(`#like-count-${postId}`);
+                        likeCount.textContent = `${data.like_count} likes`;
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+        document.querySelectorAll('.comment-form').forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+              event.preventDefault(); // Prevent the default form submission
+      
+              const postId = form.dataset.postId;
+              const url = "{% url 'add_comment' 0 %}".replace('0', postId);
+              const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+              const commentContent = form.querySelector('textarea[name="content"]').value;
+      
+              fetch(url, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded', // Use form-encoded content
+                      'X-CSRFToken': csrfToken,
+                  },
+                  body: new URLSearchParams({ content: commentContent }).toString(),
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.error) {
+                      alert('Error: ' + data.error);
+                  } else {
+                      // Update the comments list dynamically
+                      const commentList = document.querySelector(`#comment-list-${postId}`);
+                      const newComment = document.createElement('li');
+                      newComment.innerHTML = `<strong>${data.comment_author}</strong>: ${data.comment_content}`;
+                      commentList.appendChild(newComment);
+      
+                      // Clear the textarea
+                      form.querySelector('textarea[name="content"]').value = '';
+                  }
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  form.querySelector('textarea[name="content"]').value = '';
+                  {% comment %} alert('Something went wrong while adding your comment.');
+              });
+          });
+      });
+      
+      
+    </script>
+</body>
+</html>
+
+{%endcomment%}
+
+
+
+{% comment %} 
+
 {% load static %} 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,6 +763,12 @@
 </head>
 <body>
     <header>
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'core/logo.svg' %}" alt="Social Project Logo" class="logo">
+            </a>
+        </div>
       <nav>
         <ul>
             
@@ -108,15 +868,14 @@
             .catch(error => {
                 console.error('Error:', error);
                 form.querySelector('textarea[name="content"]').value = '';
-                {% comment %} alert('Something went wrong while adding your comment.'); {% endcomment %}
+                {% comment %} alert('Something went wrong while adding your comment.'); 
+            
             });
         });
     });
-    
-    
-      </script>
-      
-        
-        
+     
+    </script>
+       
 </body>
 </html>
+{% endcomment %}

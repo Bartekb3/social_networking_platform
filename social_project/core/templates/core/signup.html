@@ -1,4 +1,41 @@
-{% extends 'core/base.html' %}
+
+{% extends 'core/base2.html' %}
+{% load static %}
+
+{% block title %}Signup | Social Project{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  
+  <!-- Left brand section -->
+  <div class="auth-left">
+    <h1 class="brand-title">Social Project</h1>
+    <p class="brand-tagline">
+      Register now to get in on the fun.
+    </p>
+  </div>
+
+  <!-- Right form section -->
+  <div class="auth-right">
+    <div class="auth-form-container">
+      <form method="post" action="{% url 'signup' %}">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- e.g., first_name, last_name, email, password fields -->
+
+        <button class="primary-btn" type="submit">Sign Up</button>
+      </form>
+
+      <div class="already-member">
+        <p>Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'core/base.html' %}
  
 {% block title %}Signup{% endblock %} 
 
@@ -22,4 +59,4 @@
   </div>
   {% endif %}
 </section>
-{% endblock %}
+{% endblock %} {% endcomment %}

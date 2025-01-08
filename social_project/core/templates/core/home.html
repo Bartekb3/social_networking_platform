@@ -4,6 +4,196 @@
 
 {% block content %}
 <section>
+  <header>
+    <h1>Welcome, {{ user.username }}!</h1>
+     <!-- 
+        "Facebook-like" Feed: 
+        If you want this feed to appear on EVERY page, keep it here. 
+        If you only want it on home page, move it to home.html 
+      -->
+      <div class="feed-container">
+
+        <!-- 1) Create Post (like "What's on your mind?") -->
+        <div class="create-post">
+          <h2>Create a Post</h2>
+          <form method="post" action="{% url 'home' %}">
+            {% csrf_token %}
+            <!-- If you have a Django form for post creation, you can do: {{ post_form.as_p }} -->
+            <textarea name="content" rows="2" placeholder="What's on your mind?" required></textarea>
+            <button type="submit" name="create_post">Post</button>
+          </form>
+        </div>
+
+        <hr>
+
+        <!-- 2) The actual feed of posts -->
+        <div class="feed">
+          <h2>Friend Feed</h2>
+          
+          {% if posts %}
+            {% for post in posts %}
+            <article class="post-card">
+              <header>
+                <h3>
+                  <a href="{% url 'profile' post.author.id %}">
+                    {{ post.author.username }}
+                  </a>
+                </h3>
+                <small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small>
+              </header>
+
+              <p>{{ post.content }}</p>
+
+              <footer>
+                <!-- Like Button (with count) -->
+                <button class="like-button" 
+                        data-post-id="{{ post.id }}" 
+                        data-like-url="{% url 'like_post' post.id %}">
+                  {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
+                  ({{ post.likes.count }})
+                </button>
+
+                <!-- Comment Button (toggles comment box) -->
+                <button class="comment-toggle" data-post-id="{{ post.id }}">
+                  Comment
+                </button>
+
+                <!-- View Post Button -->
+                <a class="view-post-btn" href="{% url 'post_detail' post.id %}">
+                  View Post
+                </a>
+              </footer>
+
+              <!-- Comment Box (hidden by default) -->
+              <div class="comment-box hidden" id="comment-box-{{ post.id }}">
+                <form class="comment-form" data-post-id="{{ post.id }}">
+                  {% csrf_token %}
+                  <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+                  <button type="submit">Submit</button>
+                </form>
+              </div>
+              
+            </article>
+            {% endfor %}
+          {% else %}
+            <p>No posts to display. Start adding friends or create a post!</p>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+  </div>
+  {% endblock %}
+
+  {%comment%}
+    <!-- Search Form (optional, you might rely on the top nav search) -->
+    <form method="get" action="{% url 'home' %}">
+      <input type="text" name="q" placeholder="Search users..." value="{{ query|default_if_none:'' }}">
+      <button type="submit">Search</button>
+    </form>
+    
+    <!-- Search Results -->
+    {% if search_results is not None %}
+      <h2>Search Results</h2>
+      {% if search_results %}
+        <ul>
+          {% for user in search_results %}
+            <li><a href="{% url 'profile' user.id %}">{{ user.username }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No users found for "{{ query }}".</p>
+      {% endif %}
+    {% endif %}
+  </header>
+
+  <hr>
+
+  <!-- Create Post -->
+  <h2>Create a post</h2>
+  <form method="post" action="{% url 'home' %}">
+    {% csrf_token %}
+    {{ post_form.content.errors }}
+    <textarea name="content" rows="4" placeholder="What's on your mind?" required>{{ post_form.content.value|default:'' }}</textarea>
+    <button type="submit" name="create_post">Post</button>
+  </form>
+
+  <hr>
+
+  <!-- Friend Requests Section -->
+  <section>
+    <header><h2>Friend Requests</h2></header>
+    {% if user.profile.friend_requests.exists %}
+      <ul>
+        {% for sender in user.profile.friend_requests.all %}
+        <li>
+          <p>{{ sender.user.username }} sent you a friend request.</p>
+          <form method="post" action="{% url 'accept_friend_request' sender.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Accept</button>
+          </form>
+          <form method="post" action="{% url 'reject_friend_request' sender.user.id %}">
+            {% csrf_token %}
+            <button type="submit">Reject</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No pending friend requests.</p>
+    {% endif %}
+  </section>
+
+  <hr>
+
+  <!-- Friend Feed -->
+  <h2>Friend Feed</h2>
+  {% if posts %}
+    <ul>
+      {% for post in posts %}
+      <li>
+        <article>
+          <header>
+            <h3>
+              <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>
+              <small><a href="{% url 'post_detail' post.id %}">View Post</a></small>
+            </h3>
+            <p><small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small></p>
+          </header>
+
+          <p>{{ post.content }}</p>
+
+          <footer>
+            <p id="like-count-{{ post.id }}">{{ post.likes.count }} likes</p>
+            <button class="like-button" 
+                    data-post-id="{{ post.id }}" 
+                    data-like-url="{% url 'like_post' post.id %}">
+              {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
+            </button>
+          </footer>
+
+          <!-- Comment Form -->
+          <form class="comment-form" data-post-id="{{ post.id }}">
+            {% csrf_token %}
+            <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+            <button type="submit">Comment</button>
+          </form>
+        </article>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No posts to display. Start adding friends or create your own post!</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+
+{% comment %} {% extends 'core/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section>
     <header>
         <h1>Welcome, {{ user.username }}!</h1>
         <p><a href="{% url 'profile' user.id %}">Go to My Profile</a></p>
@@ -103,4 +293,4 @@
     <p>No posts to display. Start adding friends or create your own post!</p>
     {% endif %}
 </section>
-{% endblock %}
+{% endblock %} {% endcomment %}
