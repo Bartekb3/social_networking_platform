@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
+from .forms import ProfilePictureForm
 
 def signup_view(request):
     if request.method == 'POST':
@@ -140,20 +141,20 @@ def home_view(request):
     if query:
         search_results = User.objects.filter(
             Q(username__icontains=query) | Q(email__icontains=query)
-        )  # Search by username or email
+        )
 
-    # Handle post creation
+    # Handle post creation (FIX: include request.FILES)
     if request.method == 'POST' and 'create_post' in request.POST:
-        post_form = PostForm(request.POST)
+        post_form = PostForm(request.POST, request.FILES)  # <-- include request.FILES here
         if post_form.is_valid():
             post = post_form.save(commit=False)
-            post.author = request.user  # Assign the logged-in user as the author
+            post.author = request.user
             post.save()
             return redirect('home')
     else:
         post_form = PostForm()
 
-    # Get the current user's friends' posts, excluding the user's own posts
+    # Get the current user's friends' posts, excluding the user's own
     user_friends = request.user.profile.friends.all()
     posts = Post.objects.filter(author__profile__in=user_friends).exclude(author=request.user).order_by('-created_at')
 
@@ -161,12 +162,8 @@ def home_view(request):
         'posts': posts,
         'search_results': search_results,
         'query': query,
-        'post_form': post_form,  # Pass the post form to the template
+        'post_form': post_form,
     })
-
-
-
-
 
 
 @login_required
@@ -186,7 +183,7 @@ def create_post_view(request):
 
 
 
-# View a single post and its comments
+@login_required
 def post_detail_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     comments = post.comments.all()  # Fetch all comments for the post
@@ -203,7 +200,7 @@ def post_detail_view(request, post_id):
 @login_required
 def add_comment_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-
+    
     if request.method == 'POST':
         # Get the comment content from the POST data
         comment_content = request.POST.get('content')
@@ -248,17 +245,23 @@ def like_post_view(request, post_id):
 
 @login_required
 def profile_view(request, user_id):
-    # Get the user's profile
     profile = get_object_or_404(Profile, user_id=user_id)
-    
-    # Get all posts authored by the user
     posts = Post.objects.filter(author=profile.user).order_by('-created_at')
+    is_own_profile = (profile.user == request.user)
 
-    # Check if the profile belongs to the logged-in user
-    is_own_profile = profile.user == request.user
+    # Initialize the form for uploading profile picture
+    if request.method == 'POST' and is_own_profile:
+        form = ProfilePictureForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile picture updated successfully.')
+            return redirect('profile', user_id=user_id)
+    else:
+        form = ProfilePictureForm(instance=profile)
 
     return render(request, 'core/profile.html', {
         'profile': profile,
         'posts': posts,
-        'is_own_profile': is_own_profile,  # Pass the check to the template
+        'is_own_profile': is_own_profile,
+        'form': form,
     })

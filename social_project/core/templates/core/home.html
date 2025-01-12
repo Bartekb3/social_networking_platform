@@ -1,296 +1,388 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<section>
-  <header>
-    <h1>Welcome, {{ user.username }}!</h1>
-     <!-- 
-        "Facebook-like" Feed: 
-        If you want this feed to appear on EVERY page, keep it here. 
-        If you only want it on home page, move it to home.html 
-      -->
-      <div class="feed-container">
+<div class="feed-container">
 
-        <!-- 1) Create Post (like "What's on your mind?") -->
-        <div class="create-post">
-          <h2>Create a Post</h2>
-          <form method="post" action="{% url 'home' %}">
-            {% csrf_token %}
-            <!-- If you have a Django form for post creation, you can do: {{ post_form.as_p }} -->
-            <textarea name="content" rows="2" placeholder="What's on your mind?" required></textarea>
-            <button type="submit" name="create_post">Post</button>
-          </form>
-        </div>
+  <!-- 1) Facebook-like "Create Post" button -->
+  <!-- CREATE POST SECTION (replace your old create-post-section block) -->
+<div class="create-post-section">
+  <div >
 
-        <hr>
-
-        <!-- 2) The actual feed of posts -->
-        <div class="feed">
-          <h2>Friend Feed</h2>
-          
-          {% if posts %}
-            {% for post in posts %}
-            <article class="post-card">
-              <header>
-                <h3>
-                  <a href="{% url 'profile' post.author.id %}">
-                    {{ post.author.username }}
-                  </a>
-                </h3>
-                <small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small>
-              </header>
-
-              <p>{{ post.content }}</p>
-
-              <footer>
-                <!-- Like Button (with count) -->
-                <button class="like-button" 
-                        data-post-id="{{ post.id }}" 
-                        data-like-url="{% url 'like_post' post.id %}">
-                  {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
-                  ({{ post.likes.count }})
-                </button>
-
-                <!-- Comment Button (toggles comment box) -->
-                <button class="comment-toggle" data-post-id="{{ post.id }}">
-                  Comment
-                </button>
-
-                <!-- View Post Button -->
-                <a class="view-post-btn" href="{% url 'post_detail' post.id %}">
-                  View Post
-                </a>
-              </footer>
-
-              <!-- Comment Box (hidden by default) -->
-              <div class="comment-box hidden" id="comment-box-{{ post.id }}">
-                <form class="comment-form" data-post-id="{{ post.id }}">
-                  {% csrf_token %}
-                  <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
-                  <button type="submit">Submit</button>
-                </form>
-              </div>
-              
-            </article>
-            {% endfor %}
-          {% else %}
-            <p>No posts to display. Start adding friends or create a post!</p>
-          {% endif %}
-        </div>
-      </div>
-    </main>
-  </div>
-  {% endblock %}
-
-  {%comment%}
-    <!-- Search Form (optional, you might rely on the top nav search) -->
-    <form method="get" action="{% url 'home' %}">
-      <input type="text" name="q" placeholder="Search users..." value="{{ query|default_if_none:'' }}">
-      <button type="submit">Search</button>
-    </form>
+  <div class="create-post-row">
     
-    <!-- Search Results -->
-    {% if search_results is not None %}
-      <h2>Search Results</h2>
-      {% if search_results %}
-        <ul>
-          {% for user in search_results %}
-            <li><a href="{% url 'profile' user.id %}">{{ user.username }}</a></li>
-          {% endfor %}
-        </ul>
+    <!-- Small profile pic next to the “What’s on your mind?” button -->
+    <div class="mini-profile-pic">
+      {% if user.profile.profile_picture %}
+        <img 
+          src="{{ user.profile.profile_picture.url }}" 
+          alt="Profile" 
+        >
       {% else %}
-        <p>No users found for "{{ query }}".</p>
+        <img 
+          src="{% static 'core/default-avatar.png' %}" 
+          alt="Default Profile"
+        >
       {% endif %}
-    {% endif %}
-  </header>
+    </div>
+    
+    <!-- The "What's on your mind" button that opens create post modal -->
+    <button class="open-create-post-btn" id="openCreatePostModal">
+      What's on your mind, {{ user.username }}?
+    </button>
+    </div>
+  </div>
+</div>
 
+
+  <!-- 2) The modal for creating a post -->
+  <div class="create-post-modal hidden" id="createPostModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Post</h2>
+        <button class="close-modal-btn" id="closeCreatePostModal">&times;</button>
+      </div>
+      <hr>
+      <form method="post" action="{% url 'home' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <!-- Text area for post content -->
+          <textarea 
+            name="content" 
+            rows="4" 
+            placeholder="What's on your mind, {{ user.username }}?" 
+            required
+          ></textarea>
+
+          <!-- Image upload input -->
+          {% comment %} <label for="postImage" class="image-upload-label">Add to your post</label> {% endcomment %}
+          <input 
+            type="file" 
+            id="postImage" 
+            name="image" 
+            accept="image/*"
+          >
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" name="create_post" class="submit-post-btn">
+            Post
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
   <hr>
 
-  <!-- Create Post -->
-  <h2>Create a post</h2>
-  <form method="post" action="{% url 'home' %}">
-    {% csrf_token %}
-    {{ post_form.content.errors }}
-    <textarea name="content" rows="4" placeholder="What's on your mind?" required>{{ post_form.content.value|default:'' }}</textarea>
-    <button type="submit" name="create_post">Post</button>
-  </form>
-
-  <hr>
-
-  <!-- Friend Requests Section -->
-  <section>
-    <header><h2>Friend Requests</h2></header>
-    {% if user.profile.friend_requests.exists %}
-      <ul>
-        {% for sender in user.profile.friend_requests.all %}
-        <li>
-          <p>{{ sender.user.username }} sent you a friend request.</p>
-          <form method="post" action="{% url 'accept_friend_request' sender.user.id %}">
-            {% csrf_token %}
-            <button type="submit">Accept</button>
-          </form>
-          <form method="post" action="{% url 'reject_friend_request' sender.user.id %}">
-            {% csrf_token %}
-            <button type="submit">Reject</button>
-          </form>
-        </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No pending friend requests.</p>
-    {% endif %}
-  </section>
-
-  <hr>
-
-  <!-- Friend Feed -->
-  <h2>Friend Feed</h2>
-  {% if posts %}
-    <ul>
+  <!-- 3) The feed of posts -->
+  <div class="feed">
+    <h2 style='margin-bottom: 20px; margin-up: 20px'>Friend's Posts</h2>
+    {% if posts %}
       {% for post in posts %}
-      <li>
-        <article>
-          <header>
-            <h3>
-              <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>
-              <small><a href="{% url 'post_detail' post.id %}">View Post</a></small>
-            </h3>
-            <p><small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small></p>
-          </header>
+      <article class="post-card">
+        <!-- Post header: author pic + name + date -->
+        <div class="post-header">
+          <div class="post-author-pic">
+            {% if post.author.profile.profile_picture %}
+              <img 
+                src="{{ post.author.profile.profile_picture.url }}" 
+                alt="{{ post.author.username }}'s pic"
+              >
+            {% else %}
+              <img 
+                src="{% static 'core/default-avatar.png' %}" 
+                alt="Default pic"
+              >
+            {% endif %}
+          </div>
+          <div class="post-author-info">
+            <span class="post-author-name">
+              <a href="{% url 'profile' post.author.id %}" style="color: black; text-decoration: none;">
+                {{ post.author.username }}
+              </a>
+            </span><br>
+            <small class="post-time">
+              {{ post.created_at|date:"F j, Y, g:i a" }}
+            </small>
+          </div>
+        </div>
 
+        <!-- Post content text -->
+        <div class="post-content">
           <p>{{ post.content }}</p>
+        </div>
 
-          <footer>
-            <p id="like-count-{{ post.id }}">{{ post.likes.count }} likes</p>
-            <button class="like-button" 
-                    data-post-id="{{ post.id }}" 
-                    data-like-url="{% url 'like_post' post.id %}">
-              {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
-            </button>
-          </footer>
+        <!-- If there's an image, display it -->
+        {% if post.image %}
+        <div class="post-image">
+          <img 
+            src="{{ post.image.url }}" 
+            alt="Post Image"
+          >
+        </div>
+        {% endif %}
 
-          <!-- Comment Form -->
+        <!-- Post footer: like, comment, view post -->
+        <footer class="post-footer">
+          <button class="like-button" 
+                  data-post-id="{{ post.id }}" 
+                  data-like-url="{% url 'like_post' post.id %}">
+            {% if user in post.likes.all %}
+              Unlike ({{ post.likes.count }})
+            {% else %}
+              Like ({{ post.likes.count }})
+            {% endif %}
+          </button>
+          <button class="comment-toggle" data-post-id="{{ post.id }}">
+            Comment ({{ post.comments.count }})
+          </button>
+          <a class="view-post-btn" href="#" data-post-id="{{ post.id }}"> View Post </a>
+        </footer>
+
+        <!-- Hidden comment form -->
+        <div class="comment-box hidden" id="comment-box-{{ post.id }}">
           <form class="comment-form" data-post-id="{{ post.id }}">
             {% csrf_token %}
-            <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
-            <button type="submit">Comment</button>
+            <textarea 
+              name="content" 
+              rows="2" 
+              placeholder="Write a comment..." 
+              required
+            ></textarea>
+            <button type="submit">Submit</button>
           </form>
-        </article>
-      </li>
+        </div>
+      </article>
       {% endfor %}
-    </ul>
-  {% else %}
-    <p>No posts to display. Start adding friends or create your own post!</p>
-  {% endif %}
-</section>
-{% endblock %}
-
-
-{% comment %} {% extends 'core/base.html' %}
-
-{% block title %}Home{% endblock %}
-
-{% block content %}
-<section>
-    <header>
-        <h1>Welcome, {{ user.username }}!</h1>
-        <p><a href="{% url 'profile' user.id %}">Go to My Profile</a></p>
-        <!-- Search Form -->
-        <form method="get" action="{% url 'home' %}">
-            <input type="text" name="q" placeholder="Search users..." value="{{ query|default_if_none:'' }}">
-            <button type="submit">Search</button>
-        </form>
-        <!-- Search Results -->
-        {% if search_results is not None %}
-        <h2>Search Results</h2>
-        {% if search_results %}
-        <ul>
-            {% for user in search_results %}
-            <li>
-                <a href="{% url 'profile' user.id %}">{{ user.username }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No users found for "{{ query }}".</p>
-        {% endif %}
-        {% endif %}
-
-
-        <h2>Create post</h2>
-        <form method="post" action="{% url 'home' %}">
-            {% csrf_token %}
-            {{ post_form.content.errors }} 
-            <textarea name="content" rows="4" placeholder="What's on your mind?" required>{{ post_form.content.value|default:'' }}</textarea>
-            <button type="submit" name="create_post">Post</button>
-        </form>
-    </header>
-    <section>
-
-        
-        <header>
-            <h2>Friend Requests</h2>
-        </header>
-    
-        {% if user.profile.friend_requests.exists %}
-        <ul>
-            {% for sender in user.profile.friend_requests.all %}
-            <li>
-                <p>{{ sender.user.username }} sent you a friend request.</p>
-                <form method="post" action="{% url 'accept_friend_request' sender.user.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Accept</button>
-                </form>
-                <form method="post" action="{% url 'reject_friend_request' sender.user.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Reject</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No pending friend requests.</p>
-        {% endif %}
-    </section>
-
-    <h2>Friend Feed</h2>
-    {% if posts %}
-    <ul>
-        {% for post in posts %}
-        <li>
-            <article>
-                <header>
-                    <h3>
-                        <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>
-                        <p><a href="{% url 'post_detail' post.id %}">View Post</a></p> <!-- Link to post detail -->
-                    </h3>
-                    <p><small>Posted on {{ post.created_at|date:"F j, Y, g:i a" }}</small></p>
-                </header>
-                <p>{{ post.content }}</p>
-                <footer>
-                    <p id="like-count-{{ post.id }}">{{ post.likes.count }} likes</p>
-                    <button class="like-button" data-post-id="{{ post.id }}" data-like-url="{% url 'like_post' post.id %}">
-                        {% if user in post.likes.all %}
-                        Unlike
-                        {% else %}
-                        Like
-                        {% endif %}
-                    </button>
-                </footer>
-                <!-- Comment Form -->
-                <form class="comment-form" data-post-id="{{ post.id }}">
-                    {% csrf_token %}
-                    <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
-                    <button type="submit">Comment</button>
-                </form>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
     {% else %}
-    <p>No posts to display. Start adding friends or create your own post!</p>
+      <p>No posts to display. Start adding friends or create a post!</p>
     {% endif %}
-</section>
-{% endblock %} {% endcomment %}
+  </div>
+</div> <!-- /feed-container -->
+
+
+<!-- =========================================
+     2A) Hidden block for each post's detail
+     (Paste this INSIDE the posts loop)
+     so the detail is available to the modal
+========================================= -->
+{% for post in posts %}
+  <article id="post-detail-{{ post.id }}" class="hidden post-detail-content">
+    <!-- Post Title Row -->
+    <div class="pd-header">
+      <!-- Big post title, date, author info - style as you like -->
+      <h2 class="pd-post-title">
+        {{ post.author.username }} 
+        <small class="pd-post-date">
+          • {{ post.created_at|date:"j F Y, G:i" }}
+        </small>
+      </h2>
+      <hr>
+    </div>
+
+    <!-- Post Main Content -->
+    <div class="pd-post-content">
+      <p>{{ post.content }}</p>
+      {% if post.image %}
+      <div class="post-image">
+        <img src="{{ post.image.url }}" alt="Post Image">
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Like + comment form + existing comments (just like feed) -->
+    <div class="pd-post-actions">
+      <button class="like-button"
+              data-post-id="{{ post.id }}"
+              data-like-url="{% url 'like_post' post.id %}">
+        {% if user in post.likes.all %}
+          Unlike ({{ post.likes.count }})
+        {% else %}
+          Like ({{ post.likes.count }})
+        {% endif %}
+      </button>
+    </div>
+
+    <!-- Comment form always visible below the post -->
+    <div class="pd-comment-form">
+      <form class="comment-form" data-post-id="{{ post.id }}">
+        {% csrf_token %}
+        <textarea 
+          name="content" 
+          rows="2" 
+          placeholder="Write a comment..." 
+          required
+        ></textarea>
+        <button type="submit">Comment ({{ post.comments.count }})</button>
+      </form>
+    </div>
+
+    <!-- Existing comments, no replies -->
+    <div class="pd-comments-list">
+      {% for comment in post.comments.all %}
+        <div class="pd-comment-item">
+          <strong class="pd-comment-author">
+            {{ comment.author.username }}
+          </strong>
+          <p class="pd-comment-content">{{ comment.content }}</p>
+          <small class="pd-comment-date">
+            {{ comment.created_at|date:"j F Y, G:i" }}
+          </small>
+        </div>
+      {% empty %}
+        <p>No comments yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+{% endfor %}
+
+<!-- =========================================
+     2B) The "View Post" modal itself
+     (Paste this at the VERY END of home.html)
+========================================= -->
+<div class="view-post-modal hidden" id="viewPostModal">
+  <div class="vp-modal-content">
+    <div class="vp-modal-header">
+      <button class="vp-close-btn" id="closeViewPostModal">&times;</button>
+    </div>
+    <div class="vp-modal-body" id="viewPostModalBody">
+      <!-- We'll inject the hidden post-detail-content here -->
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // For your “Create Post” modal
+    const openBtn = document.getElementById('openCreatePostModal');
+    const closeBtn = document.getElementById('closeCreatePostModal');
+    const modal = document.getElementById('createPostModal');
+
+    openBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    // Optionally close when clicking outside the modal
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+  });
+</script>
+
+ <!-- /feed-container -->
+ <script>
+  // 2C) JavaScript to open the above modal with the correct post's info
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // For each "View Post" button in the feed:
+    document.querySelectorAll('.view-post-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const postId = btn.dataset.postId;
+
+        // 1) Grab that hidden <article> block for this post:
+        const hiddenBlock = document.getElementById('post-detail-' + postId);
+        if (!hiddenBlock) return; // safety check
+
+        // 2) Put that HTML content into our modal body
+        const modalBody = document.getElementById('viewPostModalBody');
+        modalBody.innerHTML = hiddenBlock.innerHTML;
+
+        // 3) Show the modal
+        document.getElementById('viewPostModal').classList.remove('hidden');
+
+        // 4) Re-bind any "like" or "comment" JavaScript inside the new content
+        //    (If your base script does querySelectorAll('.like-button'), etc.
+        //     you might need to re-run or re-bind that code here. For simplicity,
+        //     your existing event listeners from base.html might be enough if
+        //     they rely on the DOM. If not, replicate them.)
+      });
+    });
+
+    // Close button for the "View Post" modal
+    document.getElementById('closeViewPostModal').addEventListener('click', function() {
+      document.getElementById('viewPostModal').classList.add('hidden');
+      // Clear the content so old data doesn’t persist
+      document.getElementById('viewPostModalBody').innerHTML = '';
+      initLikeAndCommentFeatures(modalBody);
+
+    });
+
+  });
+</script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1) Modal open/close
+    const openBtn = document.getElementById('openCreatePostModal');
+    const closeBtn = document.getElementById('closeCreatePostModal');
+    const modal = document.getElementById('createPostModal');
+
+    openBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    // If you want to close when clicking outside the modal
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+
+    // (The rest of your “like button” and “comment toggle” scripts 
+    //  remain the same as in base.html)
+  });
+</script>
+<script>
+  // 2C) JavaScript to open the above modal with the correct post's info
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // For each "View Post" button in the feed:
+    document.querySelectorAll('.view-post-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const postId = btn.dataset.postId;
+
+        // 1) Grab that hidden <article> block for this post:
+        const hiddenBlock = document.getElementById('post-detail-' + postId);
+        if (!hiddenBlock) return; // safety check
+
+        // 2) Put that HTML content into our modal body
+        const modalBody = document.getElementById('viewPostModalBody');
+        modalBody.innerHTML = hiddenBlock.innerHTML;
+
+        // IMPORTANT: re-bind like/comment logic on newly injected HTML
+        initLikeAndCommentFeatures(modalBody);
+
+        // 3) Show the modal
+        document.getElementById('viewPostModal').classList.remove('hidden');
+      });
+    });
+
+    // Close button for the "View Post" modal
+    document.getElementById('closeViewPostModal').addEventListener('click', function() {
+      document.getElementById('viewPostModal').classList.add('hidden');
+      // Clear the content so old data doesn’t persist
+      document.getElementById('viewPostModalBody').innerHTML = '';
+    });
+  });
+</script> 
+
+
+
+{% endblock %}

@@ -34,29 +34,3 @@
 </div>
 {% endblock %}
 
-
-{% comment %} {% extends 'core/base.html' %}
- 
-{% block title %}Signup{% endblock %} 
-
-{% block content %}
-<section>
-  <header>
-    <h1>Signup</h1>
-  </header>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}  <!-- Automatically renders all fields, including birthdate and gender -->
-    <button type="submit">Signup</button>
-  </form>
-  {% if form.errors %}
-  <div>
-    <ul>
-      {% for field, errors in form.errors.items %}
-      <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
-</section>
-{% endblock %} {% endcomment %}

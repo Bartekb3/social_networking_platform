@@ -44,9 +44,20 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['content']
 
-class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=forms.Textarea, max_length=500, label="Write a post")
+# class PostForm(forms.ModelForm):
+#     content = forms.CharField(widget=forms.Textarea, max_length=500, label="Write a post")
 
+#     class Meta:
+#         model = Post
+#         fields = ['content']
+# forms.py
+
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['content']
+        fields = ['content', 'image']  # Include 'image' here
+
+class ProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_picture']
