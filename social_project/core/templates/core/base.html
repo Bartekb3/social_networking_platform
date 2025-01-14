@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}Social Project{% endblock %}</title>
+  <title>{% block title %}Social Network Project{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'core/style.css' %}" />
 </head>
 <body>
@@ -24,7 +24,19 @@
         {% if search_results %}
           <ul>
             {% for usr in search_results %}
-            <li><a href="{% url 'profile' usr.id %}">{{ usr.username }}</a></li>
+            {% comment %} <li><a href="{% url 'profile' usr.id %}">{{ usr.username }}</a></li> {% endcomment %}
+
+            <li class="sidebar-list-item">
+              {% comment %} {% if usr.profile_picture %} {% endcomment %}
+<img 
+class="small-avatar"
+ src="{{ usr.profile.profile_picture.url }}" 
+ alt="Profile" 
+>
+
+<a href="{% url 'profile' usr.id %}" style="color: black; text-decoration: none;">{{ usr.username }}</a>
+</li>
+
             {% endfor %}
           </ul>
         {% else %}
@@ -46,15 +58,14 @@
     {% if user.is_authenticated %}
     <aside class="fb-sidebar">
       <ul class="sidebar-menu">
+        
         <li class="menu-item has-submenu">
+          
           <button class="menu-toggle">Friends</button>
           <ul class="submenu">
             {% if user.profile.friends.all %}
               {% for friend in user.profile.friends.all %}
               <li class="sidebar-list-item">
-                
-                  {% comment %} <img src="{% if friend.profile.profile_picture %}{{ friend.profile.profile_picture.url }}{% else %}{% static 'core/default-avatar.png' %}{% endif %}" 
-                       alt="{{ friend.user.username }}'s picture" class="small-avatar"/> {% endcomment %}
                        {% if user.profile.profile_picture %}
         <img 
         class="small-avatar"
@@ -95,7 +106,7 @@
           alt="Default Profile"
         >
       {% endif %}
-                <a href="{% url 'profile' sender.user.id %}" style="color: black; text-decoration: none;">{{ sender.user.username }}</a>
+                <a href="{% url 'profile' sender.user.id %}" style="color: black; text-decoration: none;">{{ sender.user.username|slice:":7"  }}</a>
                 <form method="post" action="{% url 'accept_friend_request' sender.user.id %}" class="inline-form">
                   {% csrf_token %}
                   <button type="submit">Accept</button>
@@ -111,7 +122,19 @@
             {% endif %}
           </ul>
         </li>
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Groups</button>
+        </li>
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Games</button>
+        </li>
+        <li class="menu-item has-submenu">
+          <button class="menu-toggle">Marketplace</button>
+        </li>
       </ul>
+
+      
+      
       <div class="sidebar-logout">
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}

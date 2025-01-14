@@ -55,7 +55,9 @@
       <!-- Right: Username + Basic Info -->
       <div class="profile-info-section">
         <h1 class="username">{{ profile.user.username }}</h1>
-
+        <p class="email">
+          Name: {{ profile.user.first_name }} {{ profile.user.last_name }}
+        </p>
         <p class="gender">
           Gender: {{ profile.gender|default:"Not specified" }}
         </p>
@@ -70,6 +72,7 @@
         <p class="email">
           Email: {{ profile.user.email }}
         </p>
+        
       </div>
     </div> <!-- /profile-header -->
 
