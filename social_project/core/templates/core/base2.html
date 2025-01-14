@@ -6,15 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Social Network Project{% endblock %}</title>
 
-  <!-- Link the new stylesheet that includes our Facebook-like styles -->
   <link rel="stylesheet" href="{% static 'core/style.css' %}">
 </head>
 <body>
   <main>
     {% block content %}{% endblock %}
   </main>
-  
-  <!-- Optional footer or disclaimers for login/signup pages -->
+
   <footer>
     {% comment %} <p>&copy; 2025 Social Project. All rights reserved.</p> {% endcomment %}
   </footer>

@@ -7,12 +7,10 @@
 
 {% block content %}
 <div class="profile-container">
-  <!-- Profile Card (unchanged, omitted for brevity) -->
   <section class="profile-card">
-    
-    <!-- Top row: big profile pic on the left, username & info on the right -->
+
     <div class="profile-header">
-      <!-- Left: Profile Picture -->
+
       <div class="profile-pic-section">
         {% if profile.profile_picture %}
           <img 
@@ -21,7 +19,7 @@
             class="profile-picture"
           >
         {% else %}
-          <!-- Fallback if no pic -->
+
           <img 
             src="{% static 'core/default-avatar.png' %}" 
             alt="Default Profile Picture" 
@@ -29,8 +27,6 @@
           >
         {% endif %}
 
-        <!-- If it's my profile, show a "Change Picture" button/file input
-             Notice we post to "profile" with the user_id, which your views.py already handles -->
         {% if is_own_profile %}
           <form 
             method="post" 
@@ -40,7 +36,7 @@
           >
             {% csrf_token %}
             <label for="profilePicUpload" class="pic-upload-btn">Change Picture</label>
-            <!-- Hidden file input auto-submits on change -->
+
             <input 
               type="file" 
               name="profile_picture" 
@@ -52,7 +48,6 @@
         {% endif %}
       </div>
 
-      <!-- Right: Username + Basic Info -->
       <div class="profile-info-section">
         <h1 class="username">{{ profile.user.username }}</h1>
         <p class="email">
@@ -74,22 +69,16 @@
         </p>
         
       </div>
-    </div> <!-- /profile-header -->
+    </div> 
 
-    <!-- Below the header: friends info + friend button -->
      <div class="profile-actions">
     <div class="friends-info">
       <span class="friends-count">Friends: {{ profile.friends.count }}</span>
-      <!-- Toggle button -->
       <button class="view-friends-btn" id="toggle-friends-btn">
         View All Friends
       </button>
     </div>
-    
-    <!-- Hidden friend list that toggles on button click -->
-    
-    
-      <!-- Friend invite/unfriend or note if it's my profile -->
+
       <div class="friend-button-container">
         {% if is_own_profile %}
           <p class="info-line">This is your profile.</p>
@@ -113,12 +102,11 @@
         {% endif %}
       </div>
       
-    </div> <!-- /profile-actions -->
+    </div>
     <ul class="profile-friends hidden" id="friends-list">
       {% for friend in profile.friends.all %}
       <li>
         <div class="friend-item">
-          <!-- Friend's small profile pic (fallback if not set) -->
           {% if friend.profile_picture %}
             <img 
               src="{{ friend.profile_picture.url }}" 
@@ -132,8 +120,7 @@
               class="friend-pic"
             >
           {% endif %}
-    
-          <!-- Friend's name (no underline by default) -->
+
           <a href="{% url 'profile' friend.user.id %}" class="friend-name">
             {{ friend.user.username }}
           </a>
@@ -143,8 +130,8 @@
       <li>No friends yet.</li>
       {% endfor %}
     </ul>
-  </section> <!-- /profile-card -->
-  <!-- Profile Posts below the card -->
+  </section>
+
   <section class="profile-posts">
     <h2>{{ profile.user.username }}'s Posts</h2>
     {% if posts %}
@@ -173,8 +160,7 @@
         <div class="post-content">
           <p>{{ post.content }}</p>
         </div>
-        
-        <!-- If there's an image, display it -->
+
         {% if post.image %}
         <div class="post-image">
           <img 

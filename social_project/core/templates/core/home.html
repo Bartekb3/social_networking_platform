@@ -6,14 +6,11 @@
 {% block content %}
 <div class="feed-container">
 
-  <!-- 1) Facebook-like "Create Post" button -->
-  <!-- CREATE POST SECTION (replace your old create-post-section block) -->
+  <!-- CREATE POST SECTION -->
 <div class="create-post-section">
   <div >
 
   <div class="create-post-row">
-    
-    <!-- Small profile pic next to the “What’s on your mind?” button -->
     <div class="mini-profile-pic">
       {% if user.profile.profile_picture %}
         <img 
@@ -27,8 +24,7 @@
         >
       {% endif %}
     </div>
-    
-    <!-- The "What's on your mind" button that opens create post modal -->
+
     <button class="open-create-post-btn" id="openCreatePostModal">
       What's on your mind, {{ user.username }}?
     </button>
@@ -37,7 +33,6 @@
 </div>
 
 
-  <!-- 2) The modal for creating a post -->
   <div class="create-post-modal hidden" id="createPostModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -48,16 +43,13 @@
       <form method="post" action="{% url 'home' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-body">
-          <!-- Text area for post content -->
+  
           <textarea 
             name="content" 
             rows="4" 
             placeholder="What's on your mind, {{ user.username }}?" 
             required
           ></textarea>
-
-          <!-- Image upload input -->
-          {% comment %} <label for="postImage" class="image-upload-label">Add to your post</label> {% endcomment %}
           <input 
             type="file" 
             id="postImage" 
@@ -77,13 +69,12 @@
   
   <hr>
 
-  <!-- 3) The feed of posts -->
   <div class="feed">
     <h2 style='margin-bottom: 20px; margin-up: 20px'>Friend's Posts</h2>
     {% if posts %}
       {% for post in posts %}
       <article class="post-card">
-        <!-- Post header: author pic + name + date -->
+
         <div class="post-header">
           <div class="post-author-pic">
             {% if post.author.profile.profile_picture %}
@@ -110,12 +101,11 @@
           </div>
         </div>
 
-        <!-- Post content text -->
+
         <div class="post-content">
           <p>{{ post.content }}</p>
         </div>
 
-        <!-- If there's an image, display it -->
         {% if post.image %}
         <div class="post-image">
           <img 
@@ -125,7 +115,6 @@
         </div>
         {% endif %}
 
-        <!-- Post footer: like, comment, view post -->
         <footer class="post-footer">
           <button class="like-button" 
                   data-post-id="{{ post.id }}" 
@@ -142,7 +131,6 @@
           <a class="view-post-btn" href="#" data-post-id="{{ post.id }}"> View Post </a>
         </footer>
 
-        <!-- Hidden comment form -->
         <div class="comment-box hidden" id="comment-box-{{ post.id }}">
           <form class="comment-form" data-post-id="{{ post.id }}">
             {% csrf_token %}
@@ -161,19 +149,13 @@
       <p>No posts to display. Start adding friends or create a post!</p>
     {% endif %}
   </div>
-</div> <!-- /feed-container -->
+</div> 
 
 
-<!-- =========================================
-     2A) Hidden block for each post's detail
-     (Paste this INSIDE the posts loop)
-     so the detail is available to the modal
-========================================= -->
 {% for post in posts %}
   <article id="post-detail-{{ post.id }}" class="hidden post-detail-content">
-    <!-- Post Title Row -->
     <div class="pd-header">
-      <!-- Big post title, date, author info - style as you like -->
+
       <h2 class="pd-post-title">
         {{ post.author.username }} 
         <small class="pd-post-date">
@@ -183,7 +165,6 @@
       <hr>
     </div>
 
-    <!-- Post Main Content -->
     <div class="pd-post-content">
       <p>{{ post.content }}</p>
       {% if post.image %}
@@ -193,7 +174,6 @@
       {% endif %}
     </div>
 
-    <!-- Like + comment form + existing comments (just like feed) -->
     <div class="pd-post-actions">
       <button class="like-button"
               data-post-id="{{ post.id }}"
@@ -206,7 +186,6 @@
       </button>
     </div>
 
-    <!-- Comment form always visible below the post -->
     <div class="pd-comment-form">
       <form class="comment-form" data-post-id="{{ post.id }}">
         {% csrf_token %}
@@ -220,7 +199,6 @@
       </form>
     </div>
 
-    <!-- Existing comments, no replies -->
     <div class="pd-comments-list">
       {% for comment in post.comments.all %}
         <div class="pd-comment-item">
@@ -239,17 +217,12 @@
   </article>
 {% endfor %}
 
-<!-- =========================================
-     2B) The "View Post" modal itself
-     (Paste this at the VERY END of home.html)
-========================================= -->
 <div class="view-post-modal hidden" id="viewPostModal">
   <div class="vp-modal-content">
     <div class="vp-modal-header">
       <button class="vp-close-btn" id="closeViewPostModal">&times;</button>
     </div>
     <div class="vp-modal-body" id="viewPostModalBody">
-      <!-- We'll inject the hidden post-detail-content here -->
     </div>
   </div>
 </div>
@@ -257,7 +230,6 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // For your “Create Post” modal
     const openBtn = document.getElementById('openCreatePostModal');
     const closeBtn = document.getElementById('closeCreatePostModal');
     const modal = document.getElementById('createPostModal');
@@ -270,7 +242,6 @@
       modal.classList.add('hidden');
     });
 
-    // Optionally close when clicking outside the modal
     window.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.classList.add('hidden');
@@ -279,40 +250,30 @@
   });
 </script>
 
- <!-- /feed-container -->
+
  <script>
-  // 2C) JavaScript to open the above modal with the correct post's info
+
   document.addEventListener('DOMContentLoaded', function() {
 
-    // For each "View Post" button in the feed:
     document.querySelectorAll('.view-post-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.preventDefault();
         const postId = btn.dataset.postId;
 
-        // 1) Grab that hidden <article> block for this post:
         const hiddenBlock = document.getElementById('post-detail-' + postId);
-        if (!hiddenBlock) return; // safety check
+        if (!hiddenBlock) return;
 
-        // 2) Put that HTML content into our modal body
         const modalBody = document.getElementById('viewPostModalBody');
         modalBody.innerHTML = hiddenBlock.innerHTML;
 
-        // 3) Show the modal
         document.getElementById('viewPostModal').classList.remove('hidden');
 
-        // 4) Re-bind any "like" or "comment" JavaScript inside the new content
-        //    (If your base script does querySelectorAll('.like-button'), etc.
-        //     you might need to re-run or re-bind that code here. For simplicity,
-        //     your existing event listeners from base.html might be enough if
-        //     they rely on the DOM. If not, replicate them.)
       });
     });
 
-    // Close button for the "View Post" modal
     document.getElementById('closeViewPostModal').addEventListener('click', function() {
       document.getElementById('viewPostModal').classList.add('hidden');
-      // Clear the content so old data doesn’t persist
+
       document.getElementById('viewPostModalBody').innerHTML = '';
       initLikeAndCommentFeatures(modalBody);
 
@@ -337,47 +298,36 @@
       modal.classList.add('hidden');
     });
 
-    // If you want to close when clicking outside the modal
     window.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.classList.add('hidden');
       }
     });
 
-    // (The rest of your “like button” and “comment toggle” scripts 
-    //  remain the same as in base.html)
   });
 </script>
 <script>
-  // 2C) JavaScript to open the above modal with the correct post's info
   document.addEventListener('DOMContentLoaded', function() {
 
-    // For each "View Post" button in the feed:
     document.querySelectorAll('.view-post-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.preventDefault();
         const postId = btn.dataset.postId;
 
-        // 1) Grab that hidden <article> block for this post:
         const hiddenBlock = document.getElementById('post-detail-' + postId);
-        if (!hiddenBlock) return; // safety check
+        if (!hiddenBlock) return; 
 
-        // 2) Put that HTML content into our modal body
         const modalBody = document.getElementById('viewPostModalBody');
         modalBody.innerHTML = hiddenBlock.innerHTML;
 
-        // IMPORTANT: re-bind like/comment logic on newly injected HTML
         initLikeAndCommentFeatures(modalBody);
 
-        // 3) Show the modal
         document.getElementById('viewPostModal').classList.remove('hidden');
       });
     });
 
-    // Close button for the "View Post" modal
     document.getElementById('closeViewPostModal').addEventListener('click', function() {
       document.getElementById('viewPostModal').classList.add('hidden');
-      // Clear the content so old data doesn’t persist
       document.getElementById('viewPostModalBody').innerHTML = '';
     });
   });

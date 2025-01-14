@@ -157,7 +157,7 @@ class="small-avatar"
   </div>
 
   <footer class="fb-footer">
-    {% comment %} <p>&copy; 2025 Social Project. All rights reserved.</p> {% endcomment %}
+
   </footer>
 
   <script>
@@ -165,8 +165,7 @@ class="small-avatar"
       const viewPostModal = document.getElementById('profileViewPostModal');
       const viewPostModalBody = document.getElementById('profileViewPostModalBody');
       const closeViewPostBtn = document.getElementById('profileCloseViewPostModal');
-    
-      // Attach event listeners to all "View Post" buttons
+
       document.querySelectorAll('.view-post-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
@@ -174,32 +173,28 @@ class="small-avatar"
           const hiddenBlock = document.getElementById('post-detail-' + postId);
     
           if (!hiddenBlock || !viewPostModalBody || !viewPostModal) return;
-    
-          // Inject the hidden post detail into the modal body
+
           viewPostModalBody.innerHTML = hiddenBlock.innerHTML;
     
-          // Re-bind like/comment logic within the modal content if needed
           if (typeof initLikeAndCommentFeatures === 'function') {
             initLikeAndCommentFeatures(viewPostModalBody);
           }
-    
-          // Show the modal
+
           viewPostModal.classList.remove('hidden');
         });
       });
     
-      // Close modal functionality
+
       if (closeViewPostBtn && viewPostModal && viewPostModalBody) {
         closeViewPostBtn.addEventListener('click', function() {
           viewPostModal.classList.add('hidden');
-          viewPostModalBody.innerHTML = ''; // Clear content on close
+          viewPostModalBody.innerHTML = ''; 
         });
       }
     });
     </script>
     
   <script>
-    // Reusable function that attaches like/comment logic
     function initLikeAndCommentFeatures(container) {
       container.querySelectorAll('.like-button').forEach(function(button) {
         button.addEventListener('click', function(event) {
@@ -265,7 +260,6 @@ class="small-avatar"
     }
   
     document.addEventListener('DOMContentLoaded', function() {
-      // Attach menu toggle functionality
       document.querySelectorAll('.menu-toggle').forEach(function(toggleBtn) {
         toggleBtn.addEventListener('click', function() {
           const submenu = this.nextElementSibling;
@@ -274,8 +268,7 @@ class="small-avatar"
           }
         });
       });
-  
-      // Initialize like and comment features for the entire document
+
       initLikeAndCommentFeatures(document);
     });
   </script>

@@ -4,10 +4,10 @@ from .views import signup_view, reject_friend_request_view,accept_friend_request
 ethod_names = ['get', 'post', 'head', 'options'] 
 
 urlpatterns = [
-    path('', home_view, name='home'), # Homepage    
+    path('', home_view, name='home'),
     path('signup/', signup_view, name='signup'),
-     path('login/', LoginView.as_view(template_name='core/login.html'), name='login'),  # Login route
-    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),  # Redirect to login page after logout
+     path('login/', LoginView.as_view(template_name='core/login.html'), name='login'),  
+    path('logout/', LogoutView.as_view(next_page='login'), name='logout'), 
     path('create_post/', create_post_view, name='create_post'),
     path('post/<int:post_id>/', post_detail_view, name='post_detail'),
     path('post/<int:post_id>/comment/', add_comment_view, name='add_comment'),

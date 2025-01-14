@@ -30,7 +30,6 @@ class RegistrationForm(UserCreationForm):
         user = super().save(commit=False)
         if commit:
             user.save()
-            # Update the automatically created Profile with extra data
             profile = user.profile
             profile.birthdate = self.cleaned_data['birthdate']
             profile.gender = self.cleaned_data['gender']
@@ -44,18 +43,12 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['content']
 
-# class PostForm(forms.ModelForm):
-#     content = forms.CharField(widget=forms.Textarea, max_length=500, label="Write a post")
 
-#     class Meta:
-#         model = Post
-#         fields = ['content']
-# forms.py
 
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['content', 'image']  # Include 'image' here
+        fields = ['content', 'image']  
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:

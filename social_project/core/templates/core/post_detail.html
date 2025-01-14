@@ -4,16 +4,15 @@
 
 {% block content %}
 <div class="post-detail-container">
-  
-  <!-- Author + Post Card -->
+
   <article class="post-detail-card">
-    <!-- Post Detail Header -->
+
     <header class="post-detail-header">
-      <!-- Optional Author Avatar (if you have a user avatar system) -->
+
       <div class="post-detail-author">
         <a href="{% url 'profile' post.author.id %}">
           <img 
-            {% comment %} src="{% static 'core/default_avatar.png' %}"  {% endcomment %}
+
             alt="{{ post.author.username }}" 
             class="author-avatar"
           >
@@ -24,7 +23,6 @@
         </div>
       </div>
 
-      <!-- Like Count + Like Button -->
       <div class="post-detail-like">
         <button 
           class="like-button" 
@@ -40,26 +38,23 @@
       </div>
     </header>
 
-    <!-- Post Content -->
     <section class="post-detail-content">
       <p>{{ post.content }}</p>
     </section>
   </article>
 
-  <!-- Comments Section -->
   <section class="comments-section">
     <header>
       <h3>Comments</h3>
     </header>
-    
-    <!-- Existing Comments -->
+
     {% if comments %}
       <ul class="comment-list" id="comment-list-{{ post.id }}">
         {% for comment in comments %}
         <li class="comment-item">
           <div class="comment-author">
             <strong>{{ comment.author.username }}</strong>
-            {% comment %} <small>{{ comment.created_at|naturaltime }}</small> {% endcomment %}
+
           </div>
           <p class="comment-text">{{ comment.content }}</p>
         </li>
@@ -70,7 +65,6 @@
       <ul class="comment-list" id="comment-list-{{ post.id }}"></ul>
     {% endif %}
 
-    <!-- Add a Comment Form -->
     <form class="comment-form" data-post-id="{{ post.id }}">
       {% csrf_token %}
       <textarea 

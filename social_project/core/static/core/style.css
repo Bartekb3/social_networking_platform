@@ -10,7 +10,6 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    /* Light gray background */
     color: #1c1e21;
 }
 
@@ -35,7 +34,6 @@ body {
     width: auto;
 }
 
-/* Search bar (center) */
 .search-bar {
     flex: 1;
     position: relative;
@@ -49,7 +47,6 @@ body {
     border-radius: 4px;
 }
 
-/* Right side nav (button-like links) */
 .top-nav-right ul {
     list-style: none;
     margin: 0;
@@ -76,7 +73,7 @@ body {
     margin: 20px auto;
     padding: 0 15px;
     gap: 20px;
-    /* No white background, just body color behind */
+
 }
 
 /* =========================
@@ -94,31 +91,6 @@ body {
     overflow-y: auto;
 }
 
-/* .sidebar-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar-menu li {
-    margin-bottom: 12px;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    text-decoration: none;
-    color: #050505;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
-
-.sidebar-menu a:hover {
-    background-color: #f2f2f2;
-}
-
-/* Style for small profile pictures next to friend names */
 .small-avatar {
     width: 30px;
     height: 30px;
@@ -143,14 +115,11 @@ body {
     text-align: center;
 }
 
-/* The logout button styling will use the base button styles above */
+
 .sidebar-logout button {
     width: 100%;
 }
 
-*/
-
-/* Sidebar Container */
 .fb-sidebar {
     width: 250px;
     background-color: #f5f6f7;
@@ -160,7 +129,6 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Sidebar Menu */
 .sidebar-menu {
     list-style: none;
     padding: 0;
@@ -189,20 +157,18 @@ body {
     background-color: #d8dadf;
 }
 
-/* Submenu List */
 .sidebar-menu .submenu {
     list-style: none;
     padding-left: 15px;
     margin-top: 5px;
     display: none;
-    /* Hidden by default, toggled by JS */
+
 }
 
 .sidebar-menu .submenu.open {
     display: block;
 }
 
-/* Sidebar List Item */
 .sidebar-list-item {
     display: flex;
     align-items: center;
@@ -222,14 +188,12 @@ body {
     text-decoration: none;
 }
 
-/* Friend Requests Section Buttons */
 .inline-form button {
     padding: 5px 10px;
     margin-left: 5px;
     background-color: #004aac;
     border: none;
     border-radius: 4px;
-    /* color: #fff; */
     cursor: pointer;
     font-size: 13px;
     transition: background-color 0.2s;
@@ -239,7 +203,6 @@ body {
     background-color: #0050b8;
 }
 
-/* Logout Button */
 .sidebar-logout button {
     width: 100%;
     padding: 10px;
@@ -257,7 +220,6 @@ body {
     background-color: #d8dadf;
 }
 
-/* Expandable Submenu Transitions */
 .submenu li {
     transition: background-color 0.2s;
 }
@@ -266,7 +228,6 @@ body {
     background-color: #e9eaed;
 }
 
-/* Professional styling for friend items in the sidebar (friends list) */
 .sidebar-list-item {
     display: flex;
     align-items: center;
@@ -303,7 +264,6 @@ body {
     text-decoration: underline;
 }
 
-/* Styling for friend requests in sidebar submenu */
 .sidebar-menu .submenu li.sidebar-list-item {
     padding: 8px;
     align-items: center;
@@ -362,10 +322,8 @@ body {
 .fb-main-content {
     flex: 1;
     background: none;
-    /* keep the gray body behind it */
 }
 
-/* Django messages in the main content */
 .messages {
     list-style: none;
     padding: 0;
@@ -393,7 +351,6 @@ body {
     color: #a94442;
 }
 
-/* Basic form styling inside .fb-main-content */
 .fb-main-content form input[type="text"],
 .fb-main-content form input[type="password"],
 .fb-main-content form input[type="email"],
@@ -434,7 +391,6 @@ body {
        7) Posts / Feed
   ========================= */
 
-/* Each post is a white card with a shadow */
 .post-card {
     background-color: #fff;
     border-radius: 8px;
@@ -443,7 +399,6 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Post header: author pic, name, time */
 .post-header {
     display: flex;
     align-items: center;
@@ -474,7 +429,6 @@ body {
     margin-top: 10px;
 }
 
-/* Post footer: like, comment, view, etc. */
 .post-footer {
     margin-top: 10px;
     display: flex;
@@ -492,7 +446,6 @@ body {
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
-    /* for <a> links */
 }
 
 .like-button:hover,
@@ -501,7 +454,6 @@ body {
     background-color: #ccc;
 }
 
-/* Comment box toggling */
 .comment-box {
     margin-top: 10px;
     background-color: #f7f7f7;
@@ -513,7 +465,6 @@ body {
     display: none;
 }
 
-/* Comment form inside each post */
 .comment-form textarea {
     width: 100%;
     margin-bottom: 8px;
@@ -539,6 +490,7 @@ body {
 /* =========================
        8) Responsive
   ========================= */
+
 @media (max-width: 992px) {
     .fb-body-container {
         flex-direction: column;
@@ -576,13 +528,11 @@ body {
      PROFILE PAGE STYLES (NEW/UPDATED SECTION)
   ========================================= */
 
-/* Container around the entire profile page */
 .profile-container {
     width: 80%;
     margin: 20px auto;
 }
 
-/* The main "card" for the top portion of the profile */
 .profile-card {
     background-color: #fff;
     padding: 20px;
@@ -591,17 +541,14 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* The top area: pic on the left, user info on the right */
 .profile-header {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
-    /* space below the header row */
 }
 
 .profile-pic-section {
     position: relative;
-    /* so we can position "change pic" if needed */
 }
 
 .profile-picture {
@@ -612,7 +559,6 @@ body {
     border: 3px solid #ccc;
 }
 
-/* The "change picture" form beneath the pic (if it's my profile) */
 .profile-pic-form {
     margin-top: 10px;
     text-align: center;
@@ -630,10 +576,8 @@ body {
 
 #profilePicUpload {
     display: none;
-    /* hidden file input, triggers submit on change */
 }
 
-/* Right side with username, gender, birthdate, email */
 .profile-info-section {
     flex: 1;
 }
@@ -649,13 +593,11 @@ body {
     color: #333;
 }
 
-/* The section below the header: friend count, friend request button, etc. */
 .profile-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    /* separate the "Friends info" from "Friend button" */
 }
 
 .friends-info {
@@ -683,7 +625,6 @@ body {
     background-color: #ccc;
 }
 
-/* The friend/invite/unfriend block */
 .friend-button-container {
     margin-top: 10px;
     display: flex;
@@ -712,7 +653,6 @@ body {
     background-color: #166fe5;
 }
 
-/* For the posts under the card if needed */
 .profile-posts {
     margin-bottom: 40px;
 }
@@ -721,7 +661,6 @@ body {
   Friend List Toggle Styles
 *********************************************/
 
-/* The <ul> that holds the friend items */
 .profile-friends {
     list-style: none;
     margin: 10px 0 0 0;
@@ -730,39 +669,31 @@ body {
     font-size: 14px;
 }
 
-/* Hide the list by default */
 .hidden {
     display: none;
 }
 
-/* Each <li> can wrap a .friend-item with pic + name */
 .friend-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* small space between pic and name */
     margin: 6px 0;
 }
 
-/* The small profile picture */
 .friend-pic {
     width: 30px;
     height: 30px;
     object-fit: cover;
     border-radius: 50%;
     border: 1px solid #ccc;
-    /* optional small border */
 }
 
-/* The friend name: colored, no underline by default */
 .friend-name {
     color: #1877f2;
-    /* Facebook-like blue */
     text-decoration: none;
     font-weight: 600;
 }
 
-/* Optional underline on hover for clarity */
 .friend-name:hover {
     text-decoration: underline;
 }
@@ -771,29 +702,22 @@ body {
  *        LOGIN & SIGNUP PAGE STYLES (Add to style.css)       *
  **************************************************************/
 
-/* Container that wraps brand (left) + form (right) */
 .auth-page {
     display: flex;
     justify-content: center;
     align-items: center;
     max-width: 900px;
-    /* or 1000px, as you prefer */
     margin: 60px auto;
     flex-wrap: wrap;
-    /* so it stacks on small screens */
     padding: 0 20px;
-    /* The overall background is still #f0f2f5 from your body, 
-       so no need to set it again here. */
 }
 
 .brand-title {
     margin-bottom: 6px;
-    /* Slight gap between title and tagline */
 }
 
 .brand-tagline {
     margin: 0;
-    /* Remove extra spacing */
     font-size: 18px;
     line-height: 1.3;
     color: #1c1e21;
@@ -803,14 +727,12 @@ body {
    Stacking brand (auth-left) above the form (auth-right)
    in signup page
 *******************************************************/
+
 .auth-page {
     flex-direction: column;
-    /* stack vertically */
     align-items: center;
-    /* center horizontally */
     max-width: 900px;
     margin: 60px auto;
-    /* space from top/bottom */
     padding: 0 20px;
 }
 
@@ -818,17 +740,14 @@ body {
     width: 100%;
     text-align: center;
     margin-bottom: 20px;
-    /* gap before form container */
 }
 
 .auth-right {
     width: 100%;
     max-width: 500px;
-    /* form container width */
     margin: 0 auto;
 }
 
-/* The white "card" that holds the form fields & buttons */
 .auth-form-container {
     background-color: #fff;
     padding: 20px 20px 30px;
@@ -836,7 +755,6 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* The form labels/paragraphs from {{ form.as_p }} */
 .auth-form-container p {
     margin: 12px 0;
 }
@@ -848,7 +766,6 @@ body {
     margin-bottom: 5px;
 }
 
-/* Text fields */
 .auth-form-container input[type="text"],
 .auth-form-container input[type="email"],
 .auth-form-container input[type="password"] {
@@ -861,7 +778,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Primary button (e.g. "Log In", "Sign Up") */
 .primary-btn {
     width: 100%;
     background-color: #1877f2;
@@ -877,10 +793,9 @@ body {
 
 .primary-btn:hover {
     background-color: #166fe5;
-    /* slightly darker */
+
 }
 
-/* Secondary button (e.g. "Create New Account") */
 .secondary-btn {
     width: 100%;
     background-color: #42b72a;
@@ -898,14 +813,12 @@ body {
     background-color: #36a420;
 }
 
-/* Horizontal line inside the form */
 .auth-form-container hr {
     border: none;
     border-top: 1px solid #dadde1;
     margin: 20px 0;
 }
 
-/* "Already member?" or "Forgot password?" text/links */
 .already-member,
 .forgot-password {
     text-align: center;
@@ -919,7 +832,6 @@ body {
     text-decoration: none;
 }
 
-/* Make it responsive */
 @media (max-width: 768px) {
     .auth-page {
         flex-direction: column;
@@ -940,8 +852,9 @@ body {
 }
 
 /***************************************************************
-  CREATE POST MODAL (Add these to your existing style.css)
+  POST MODAL 
 ****************************************************************/
+
 .create-post-section {
     text-align: center;
     margin-bottom: 20px;
@@ -965,7 +878,6 @@ body {
     background-color: #f2f2f2;
 }
 
-/* Modal overlay */
 .create-post-modal {
     position: fixed;
     z-index: 9999;
@@ -974,13 +886,11 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    /* semi-transparent backdrop */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* The modal content box */
 .modal-content {
     background-color: #fff;
     width: 90%;
@@ -991,12 +901,10 @@ body {
     position: relative;
 }
 
-/* Hidden by default */
 .hidden {
     display: none;
 }
 
-/* Modal header with title & close button */
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -1017,13 +925,11 @@ body {
     cursor: pointer;
 }
 
-/* Horizontal rule in modal */
 .modal-content hr {
     border: 0;
     border-top: 1px solid #ccc;
 }
 
-/* Modal body */
 .modal-body {
     padding: 15px;
     display: flex;
@@ -1040,7 +946,6 @@ body {
     border-radius: 6px;
 }
 
-/* Label for file input */
 .image-upload-label {
     display: block;
     font-size: 14px;
@@ -1049,12 +954,10 @@ body {
     cursor: pointer;
 }
 
-/* File input styling */
 #postImage {
     font-size: 14px;
 }
 
-/* Modal footer */
 .modal-footer {
     border-top: 1px solid #dddfe2;
     padding: 10px 15px;
@@ -1090,7 +993,7 @@ body {
 }
 
 /* ===============================================
-   A) MINI PROFILE PIC NEXT TO "WHAT'S ON YOUR MIND"
+   A) MINI PROFILE PIC
 ================================================= */
 .create-post-row {
     display: flex;
@@ -1108,7 +1011,7 @@ body {
 /* ===============================================
    B) VIEW POST MODAL
 ================================================= */
-/* Modal overlay (similar to create-post-modal) */
+
 .view-post-modal {
     position: fixed;
     z-index: 9999;
@@ -1126,7 +1029,6 @@ body {
     display: none;
 }
 
-/* The box inside the overlay */
 .vp-modal-content {
     background-color: #fff;
     width: 90%;
@@ -1136,7 +1038,6 @@ body {
     position: relative;
 }
 
-/* Header with close button */
 .vp-modal-header {
     display: flex;
     justify-content: flex-end;
@@ -1150,7 +1051,6 @@ body {
     cursor: pointer;
 }
 
-/* The main body of the modal */
 .vp-modal-body {
     padding: 15px;
     max-height: 80vh;
@@ -1160,9 +1060,7 @@ body {
 /* ===============================================
      C) POST DETAIL CONTENT (within the modal)
 ================================================= */
-.post-detail-content {
-    /* this is hidden by default in HTML using class="hidden" */
-}
+.post-detail-content {}
 
 .pd-header {
     margin-bottom: 10px;

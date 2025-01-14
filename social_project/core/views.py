@@ -20,8 +20,8 @@ def signup_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Log the user in after successful registration
-            return redirect('home')  # Redirect to the homepage
+            login(request, user)  
+            return redirect('home')  
     else:
         form = RegistrationForm()
     return render(request, 'core/signup.html', {'form': form})
@@ -31,23 +31,19 @@ def signup_view(request):
 
 @login_required
 def add_friend_view(request, user_id):
-    # Get the target user by ID
+
     target_user = get_object_or_404(User, id=user_id)
 
-    # Get the current user's profile
     current_user_profile = request.user.profile
 
-    # Prevent adding oneself as a friend
     if request.user == target_user:
         messages.error(request, "You cannot add yourself as a friend.")
         return redirect('profile', user_id=user_id)
 
-    # Prevent adding the same friend multiple times
     if target_user in current_user_profile.friends.all():
         messages.warning(request, f"You are already friends with {target_user.username}.")
         return redirect('profile', user_id=user_id)
 
-    # Add the target user as a friend
     current_user_profile.friends.add(target_user.profile)
     messages.success(request, f"You are now friends with {target_user.username}!")
     return redirect('profile', user_id=user_id)
@@ -59,13 +55,11 @@ def send_friend_request_view(request, user_id):
     target_profile = target_user.profile
     current_profile = request.user.profile
 
-    # Check if the target user is already a friend or has a pending request
     if target_profile in current_profile.friends.all():
         messages.warning(request, f"{target_user.username} is already your friend.")
     elif current_profile in target_profile.friend_requests.all():
         messages.warning(request, f"You have already sent a friend request to {target_user.username}.")
     else:
-        # Send a friend request
         target_profile.friend_requests.add(current_profile)
         messages.success(request, f"Friend request sent to {target_user.username}.")
 
@@ -77,13 +71,10 @@ def accept_friend_request_view(request, user_id):
     sender_profile = sender.profile
     current_profile = request.user.profile
 
-    # Check if there's a pending request
     if sender_profile in current_profile.friend_requests.all():
-        # Add each other as friends
         current_profile.friends.add(sender_profile)
         sender_profile.friends.add(current_profile)
 
-        # Remove the friend request
         current_profile.friend_requests.remove(sender_profile)
         messages.success(request, f"You are now friends with {sender.username}.")
     else:
@@ -97,10 +88,7 @@ def reject_friend_request_view(request, user_id):
     sender = get_object_or_404(User, id=user_id)
     sender_profile = sender.profile
     current_profile = request.user.profile
-
-    # Check if there's a pending request
     if sender_profile in current_profile.friend_requests.all():
-        # Remove the friend request
         current_profile.friend_requests.remove(sender_profile)
         messages.success(request, f"Friend request from {sender.username} has been rejected.")
     else:
@@ -111,18 +99,13 @@ def reject_friend_request_view(request, user_id):
 
 @login_required
 def unfriend_view(request, user_id):
-    # Get the target user
     target_user = get_object_or_404(User, id=user_id)
 
-    # Get the current user's profile
     current_user_profile = request.user.profile
 
-    # Get the target user's profile
     target_user_profile = target_user.profile
 
-    # Check if the target user is a friend
     if target_user_profile in current_user_profile.friends.all():
-        # Remove the friendship symmetrically
         current_user_profile.friends.remove(target_user_profile)
         target_user_profile.friends.remove(current_user_profile)
         messages.success(request, f"You are no longer friends with {target_user.username}.")
@@ -135,17 +118,15 @@ def unfriend_view(request, user_id):
 
 @login_required
 def home_view(request):
-    # Handle the search query
-    query = request.GET.get('q')  # Get the search term from the URL
+    query = request.GET.get('q') 
     search_results = None
     if query:
         search_results = User.objects.filter(
             Q(username__icontains=query) | Q(email__icontains=query)
         )
 
-    # Handle post creation (FIX: include request.FILES)
     if request.method == 'POST' and 'create_post' in request.POST:
-        post_form = PostForm(request.POST, request.FILES)  # <-- include request.FILES here
+        post_form = PostForm(request.POST, request.FILES) 
         if post_form.is_valid():
             post = post_form.save(commit=False)
             post.author = request.user
@@ -154,7 +135,6 @@ def home_view(request):
     else:
         post_form = PostForm()
 
-    # Get the current user's friends' posts, excluding the user's own
     user_friends = request.user.profile.friends.all()
     posts = Post.objects.filter(author__profile__in=user_friends).exclude(author=request.user).order_by('-created_at')
 
@@ -172,7 +152,7 @@ def create_post_view(request):
         form = PostForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user  # Set the logged-in user as the author
+            post.author = request.user
             post.save()
             return redirect('home')
     else:
@@ -186,7 +166,7 @@ def create_post_view(request):
 @login_required
 def post_detail_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    comments = post.comments.all()  # Fetch all comments for the post
+    comments = post.comments.all() 
     comment_form = CommentForm()
     return render(request, 'core/post_detail.html', {
         'post': post,
@@ -202,13 +182,10 @@ def add_comment_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     
     if request.method == 'POST':
-        # Get the comment content from the POST data
         comment_content = request.POST.get('content')
 
         if not comment_content:
             return JsonResponse({'error': 'Content is required.'}, status=400)
-
-        # Create and save the comment
         comment = Comment.objects.create(
             post=post,
             author=request.user,
@@ -223,18 +200,15 @@ def add_comment_view(request, post_id):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
-
-# Like or unlike a post
 @login_required
 def like_post_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.user in post.likes.all():
-        post.likes.remove(request.user)  # Unlike the post
+        post.likes.remove(request.user) 
         liked = False
     else:
-        post.likes.add(request.user)  # Like the post
+        post.likes.add(request.user) 
         liked = True
 
     return JsonResponse({'liked': liked, 'like_count': post.likes.count()})
@@ -249,7 +223,6 @@ def profile_view(request, user_id):
     posts = Post.objects.filter(author=profile.user).order_by('-created_at')
     is_own_profile = (profile.user == request.user)
 
-    # Initialize the form for uploading profile picture
     if request.method == 'POST' and is_own_profile:
         form = ProfilePictureForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
